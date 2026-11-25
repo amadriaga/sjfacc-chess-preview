@@ -228,8 +228,10 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .officer-photo img { width: 68px; height: 68px; }
 .officer h3 { font-size: 1.1rem; margin: 0 0 4px; }
 .officer-name { display: inline-block; font-family: 'FASSJ Dots', var(--serif); font-size: .82rem; letter-spacing: .04em; line-height: 1; white-space: nowrap;
-  margin: 2px 0 8px; padding: 6px 9px 5px; border-radius: 6px; color: #fff; background: linear-gradient(180deg, #1c2c46 0%, var(--ink) 100%);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 -2px 4px rgba(0,0,0,.35), 0 1px 2px rgba(15,27,45,.25); text-shadow: 0 0 6px rgba(255,255,255,.25); }   /* LED strip like the tally board: dot font, unlit dots show on navy, one line (spec §90) */
+  margin: 2px 0 8px; padding: 6px 9px 5px; border-radius: 8px; color: #fff; border: 1px solid rgba(212,176,106,.55);
+  background: linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.02) 55%, rgba(0,0,0,.12) 100%), linear-gradient(180deg, #13233a 0%, #0f1b2d 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.14), inset 0 -1px 0 rgba(0,0,0,.4), 0 2px 0 rgba(4,10,20,.9), 0 4px 8px rgba(0,0,0,.3);
+  text-shadow: 0 2px 0 rgba(0,0,0,.55), 0 0 10px rgba(255,255,255,.25); }   /* LED strip like the tally board: dot font, unlit dots show on navy, one line (spec §90) */
 @media (max-width: 600px) { .officer { padding: 18px 10px; } .officer-name { font-size: .58rem; padding: 5px 6px 4px; letter-spacing: .02em; } }
 .officer-status { font-size: .74rem !important; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold) !important; }
 .officers-sub { margin: 36px 0 16px; font-size: 1.15rem; }
