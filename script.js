@@ -549,8 +549,11 @@
     };
     document.getElementById('officer-out').addEventListener('click', function () { signOut('Signed out.'); });
     // spec §52: auto-refresh every 60 s while signed in and visible; never while the officer is typing or replying
+    // spec §91: a form the officer has started filling in (radio, checkbox, typed name) is never wiped by the refresh
+    var markDirty = function (e) { var f = e.target && e.target.closest && e.target.closest('form'); if (f && opan.contains(f)) f.dataset.dirty = '1'; };
+    opan.addEventListener('change', markDirty); opan.addEventListener('input', markDirty);
     var busy = function () {
-      if (opan.querySelector('.reply-row')) return true;
+      if (opan.querySelector('.reply-row') || opan.querySelector('form[data-dirty]')) return true;
       var tas = opan.querySelectorAll('textarea');
       for (var i = 0; i < tas.length; i++) if (tas[i].value.trim() || tas[i] === document.activeElement) return true;
       return false;
