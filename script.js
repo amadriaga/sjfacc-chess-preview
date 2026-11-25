@@ -288,15 +288,22 @@
           var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t); card.appendChild(top);
           var d = document.createElement('p'); d.className = 'trustee-meta'; d.textContent = q.detail + (q.due ? ' Due: ' + q.due + '.' : ''); card.appendChild(d);
           if (q.by || q.at) { var w = document.createElement('p'); w.className = 'by'; w.textContent = (q.done ? 'Completed' : 'Marked not completed') + ' by ' + (q.by || '—') + (q.at ? ' on ' + q.at : '') + (q.note ? ' · ' + q.note : ''); card.appendChild(w); }
-          var lab = document.createElement('label'); lab.className = 'lr-tick'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = q.done;
-          lab.appendChild(cb); lab.appendChild(document.createTextNode(' Completed')); card.appendChild(lab);
-          cb.addEventListener('change', function () {
-            cb.disabled = true; say(lm, 'Saving…', true);
-            post({ form: 'officer_legal_req_set', token: tok(), id: q.id, done: cb.checked ? 'yes' : 'no' }).then(function (r) {
-              if (!r.ok) { cb.checked = !cb.checked; cb.disabled = false; say(lm, r.error || 'Couldn’t save. Please try again.'); return; }
+          var save = function (done, ctl) {   // completed steps are locked; only owners can reopen (spec §93)
+            ctl.disabled = true; say(lm, 'Saving…', true);
+            post({ form: 'officer_legal_req_set', token: tok(), id: q.id, done: done }).then(function (r) {
+              if (!r.ok) { ctl.disabled = false; if (ctl.type === 'checkbox') ctl.checked = false; say(lm, r.error || 'Couldn’t save. Please try again.'); return; }
               say(lm, 'Saved.', true); draw(r);
-            }).catch(function () { cb.checked = !cb.checked; cb.disabled = false; say(lm, 'Couldn’t save. Please try again.'); });
-          });
+            }).catch(function () { ctl.disabled = false; if (ctl.type === 'checkbox') ctl.checked = false; say(lm, 'Couldn’t save. Please try again.'); });
+          };
+          if (!q.done) {
+            var lab = document.createElement('label'); lab.className = 'lr-tick'; var cb = document.createElement('input'); cb.type = 'checkbox';
+            lab.appendChild(cb); lab.appendChild(document.createTextNode(' Mark as completed')); card.appendChild(lab);
+            cb.addEventListener('change', function () { if (cb.checked) save('yes', cb); });
+          } else if (res.owner) {
+            var ro = document.createElement('button'); ro.type = 'button'; ro.className = 'lr-reopen'; ro.textContent = 'Reopen';
+            ro.addEventListener('click', function () { if (window.confirm('Reopen “' + q.title + '”? It will show as Open again.')) save('no', ro); });
+            card.appendChild(ro);
+          }
           ll.appendChild(card);
         });
       };
@@ -364,7 +371,11 @@
             d.items.forEach(function (it) {
               var row = document.createElement('fieldset'); row.className = 'trustee-item';
               var lg = document.createElement('legend'); lg.textContent = it.label; row.appendChild(lg);
-              if (it.detail) { var dt = document.createElement('p'); dt.className = 'trustee-detail'; dt.textContent = it.detail; row.appendChild(dt); }   // what is being approved (spec §80 fix)
+              if (it.detail) {   // what is being approved (spec §80 fix); several lines = numbered list (spec §94)
+                var dl = it.detail.split('\n');
+                if (dl.length > 1) { var ol = document.createElement('ol'); ol.className = 'trustee-detail trustee-detail-list'; dl.forEach(function (x) { var li = document.createElement('li'); li.textContent = x.replace(/^\d+\.\s*/, ''); ol.appendChild(li); }); row.appendChild(ol); }
+                else { var dt = document.createElement('p'); dt.className = 'trustee-detail'; dt.textContent = it.detail; row.appendChild(dt); }
+              }
               var note = document.createElement('input'); note.type = 'text'; note.name = 'note-' + it.id; note.placeholder = 'Why, or what should change?'; note.className = 'trustee-note'; note.hidden = !mine[it.id] || mine[it.id] === 'Approve';
               ['Approve', 'Deny', 'Revise'].forEach(function (c) {   // same choices as the PDF (spec §80, Alex 2026-11-24)
                 var lab = document.createElement('label'), r = document.createElement('input');
