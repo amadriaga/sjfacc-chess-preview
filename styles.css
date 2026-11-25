@@ -226,6 +226,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .officer-photo { width: 96px; height: 96px; margin: 0 auto 14px; border-radius: 50%; background: var(--ivory); border: 1px solid var(--line); color: #c9c2b2; display: grid; place-items: center; overflow: hidden; }
 .officer-photo svg { width: 64px; height: 64px; margin-top: 10px; }
 .officer h3 { font-size: 1.1rem; margin: 0 0 4px; }
+.officer-name { font-family: var(--serif); font-size: 1.05rem; margin: 0 0 4px; color: var(--ink); }
 .officer-status { font-size: .74rem !important; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold) !important; }
 .officers-sub { margin: 36px 0 16px; font-size: 1.15rem; }
 @media (max-width: 960px) { .officers { grid-template-columns: repeat(2, 1fr); } }
