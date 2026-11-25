@@ -954,7 +954,13 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 
 /* Legal Requirements tab (spec §93) */
 .lr-progress { font-weight: 600; color: var(--ink); margin: 0 0 6px; }
-.lr-phase { font-size: 1rem; margin: 18px 0 8px; }
+.lr-group { margin: 10px 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.lr-group > summary.lr-phase { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 14px; cursor: pointer; font-family: var(--serif); font-size: 1rem; font-weight: 600; color: var(--ink); list-style: none; }
+.lr-group > summary.lr-phase::-webkit-details-marker { display: none; }
+.lr-group > summary.lr-phase::before { content: '\25B8'; margin-right: 6px; color: var(--muted); }
+.lr-group[open] > summary.lr-phase::before { content: '\25BE'; }
+.lr-group > summary .lr-badge { margin-left: auto; padding: 3px 8px; font-size: .68rem; }
+.lr-group > .lr-card { margin: 0 12px 10px; }
 .lr-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
 .lr-badge--done { background: #e6f4ea; color: #1e6b34; border-color: #9fd3ae; }
 .lr-card--done { background: #fbfdfb; }

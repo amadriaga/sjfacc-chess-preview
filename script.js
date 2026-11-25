@@ -277,11 +277,22 @@
       if (!lt || !ll) return;
       var draw = function (res) {
         if (!res.ok) { lt.hidden = true; return; }
-        lt.hidden = false; ll.innerHTML = '';
+        lt.hidden = false;
         lp.textContent = res.done + ' of ' + res.total + ' complete';
-        var phase = '';
+        var was = {}; Array.prototype.forEach.call(ll.querySelectorAll('details.lr-group'), function (g) { was[g.dataset.phase] = g.open; });   // keep open/closed after a redraw
+        ll.innerHTML = '';
+        var phase = '', box = ll;
         res.items.forEach(function (q) {
-          if (q.phase !== phase) { phase = q.phase; var h = document.createElement('h3'); h.className = 'lr-phase'; h.textContent = phase; ll.appendChild(h); }
+          if (q.phase !== phase) {   // collapsible phase (Alex, 2026-11-25)
+            phase = q.phase;
+            var mine = res.items.filter(function (x) { return x.phase === phase; }), nd = mine.filter(function (x) { return x.done; }).length;
+            var g = document.createElement('details'); g.className = 'lr-group'; g.dataset.phase = phase;
+            g.open = (phase in was) ? was[phase] : nd < mine.length;
+            var sm = document.createElement('summary'); sm.className = 'lr-phase';
+            var nm = document.createElement('span'); nm.textContent = phase; sm.appendChild(nm);
+            var ct = document.createElement('span'); ct.className = 'badge lr-badge' + (nd === mine.length ? ' lr-badge--done' : ''); ct.textContent = (nd === mine.length ? '✓ ' : '') + nd + ' of ' + mine.length; sm.appendChild(ct);
+            g.appendChild(sm); ll.appendChild(g); box = g;
+          }
           var card = document.createElement('div'); card.className = 'doc-card-o lr-card' + (q.done ? ' lr-card--done' : '');
           var top = document.createElement('div'); top.className = 'lr-top';
           var b = document.createElement('span'); b.className = 'badge lr-badge' + (q.done ? ' lr-badge--done' : ''); b.textContent = q.done ? '✓ Completed' : 'Open'; top.appendChild(b);
@@ -304,7 +315,7 @@
             ro.addEventListener('click', function () { if (window.confirm('Reopen “' + q.title + '”? It will show as Open again.')) save('no', ro); });
             card.appendChild(ro);
           }
-          ll.appendChild(card);
+          box.appendChild(card);
         });
       };
       post({ form: 'officer_legal_reqs', token: tok() }).then(draw).catch(function () { lt.hidden = true; });
