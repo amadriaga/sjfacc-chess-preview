@@ -978,3 +978,11 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .auth-qr span { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.3; }
 .auth-qr small { font-weight: 400; color: var(--muted); font-size: .78rem; }
 .auth-icon { width: 26px; height: 26px; margin-bottom: 4px; }
+/* Trustees tab collapsible documents (spec §98): same look as the Legal Requirements phases */
+.td-group { margin: 10px 0; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.td-group > summary.lr-phase { display: flex; align-items: center; gap: 10px; padding: 10px 14px; cursor: pointer; font-family: var(--serif); font-weight: 600; color: var(--ink); list-style: none; }
+.td-group > summary.lr-phase::-webkit-details-marker { display: none; }
+.td-group > summary.lr-phase::before { content: '\25B8'; margin-right: 6px; color: var(--muted); }
+.td-group[open] > summary.lr-phase::before { content: '\25BE'; }
+.td-group > summary .lr-badge { margin-left: auto; padding: 3px 8px; font-size: .68rem; }
+.td-group > .trustee-card { margin: 0 12px 12px; }

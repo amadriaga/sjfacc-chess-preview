@@ -327,11 +327,18 @@
       post({ form: 'officer_trustee_docs', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
         if (!res.ok) { ttab.hidden = true; return; }
+        var wasOpen = {}; Array.prototype.forEach.call(tlist.querySelectorAll('details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
         ttab.hidden = false; tlist.innerHTML = '';
         if (!res.docs.length) { var none = document.createElement('p'); none.className = 'note'; none.textContent = 'No trustee documents yet.'; tlist.appendChild(none); return; }
         res.docs.forEach(function (d) {
-          var card = document.createElement('div'); card.className = 'doc-card-o doc-body trustee-card';
-          var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = d.title; card.appendChild(h);
+          var tg = document.createElement('details'); tg.className = 'td-group'; tg.dataset.id = d.id;   // collapsible document (spec §98)
+          var nSigned = d.trustees.filter(function (t) { return t.signed; }).length, mineSigned = !!(d.mine && d.mine.signed);
+          tg.open = (d.id in wasOpen) ? wasOpen[d.id] : (res.trustee && !mineSigned && !!d.items.length);
+          var tsm = document.createElement('summary'); tsm.className = 'lr-phase';
+          var h = document.createElement('span'); h.className = 'doc-title'; h.textContent = d.title; tsm.appendChild(h);
+          if (d.items.length) { var tb2 = document.createElement('span'); tb2.className = 'badge lr-badge' + (d.full ? ' lr-badge--done' : ''); tb2.textContent = d.full ? '✓ Fully approved' : nSigned + ' of ' + d.trustees.length + ' signed'; tsm.appendChild(tb2); }
+          tg.appendChild(tsm);
+          var card = document.createElement('div'); card.className = 'doc-card-o doc-body trustee-card'; tg.appendChild(card);
           if (d.docno) { var mt = document.createElement('p'); mt.className = 'trustee-meta'; mt.textContent = 'Last update: ' + d.updated + ' · Document No.: ' + d.docno + (d.alias ? ' · Document alias: ' + d.alias : '') + ' · Version: ' + d.version; card.appendChild(mt); }   // same header as the PDF (spec §80/§82)
           if (d.about) { var ab = document.createElement('p'); ab.className = 'doc-about'; ab.textContent = d.about; card.appendChild(ab); }
           // spec §80: clear steps for trustees (Alex, 2026-11-24)
@@ -432,7 +439,7 @@
             });
             card.appendChild(form);
           }
-          tlist.appendChild(card);
+          tlist.appendChild(tg);
         });
       }).catch(function () { ttab.hidden = true; });
     };
