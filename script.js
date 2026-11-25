@@ -566,7 +566,7 @@
           var suggest = function (deny) {   // spec §45: pre-filled, editable
             if (f.nameOk === false) return deny
               ? 'We can\u2019t accept this membership form because the player\u2019s name (\u201c' + f.name + '\u201d) isn\u2019t a real first and last name. You\u2019re very welcome to sign up again using the player\u2019s real name.'
-              : 'Thank you for signing up! The player\u2019s name on the form (\u201c' + f.name + '\u201d) looks like a username. For SJFACC's records, membership forms need the player\u2019s real first and last name. Could you please update it on the Change my registration page (link below)? We\u2019ll approve the form as soon as it\u2019s updated.';
+              : 'Thank you for signing up! The player\u2019s name on the form (\u201c' + f.name + '\u201d) looks like a username. For SJFACC\u2019s records, membership forms need the player\u2019s real first and last name. Could you please update it on the Change my registration page (link below)? We\u2019ll approve the form as soon as it\u2019s updated.';
             return deny
               ? 'We\u2019re sorry, but we can\u2019t approve this membership form because '
               : 'Thank you for signing up for SJFACC! Before we approve the form, could you please ';
@@ -915,7 +915,7 @@
             inv.addEventListener('click', function () {
               var e = em.value.trim(), v = ch.values();
               if (!e) return say(amsg, 'Please type ' + p.name + '’s email first.');
-              if (!window.confirm(inv.textContent + ' to ' + p.name + ' (' + e + ')?\n\nAreas: ' + areaText(v.roles) + '\nThe email comes from fassj.admin@gmail.com; the link works for 48 hours.')) return;
+              if (!window.confirm(inv.textContent + ' to ' + p.name + ' (' + e + ')?\n\nAreas: ' + areaText(v.roles) + '\nThe email comes from the SJFACC admin account; the link works for 48 hours.')) return;
               inv.disabled = true; adminBusy = true;
               post({ form: 'admin_invite', token: tok(), name: p.name, email: e, roles: v.roles, site: location.origin }).then(function (r) {
                 if (r.signedOut) return signOut(r.error);
@@ -1215,7 +1215,7 @@
         var btn = reqForm.querySelector('button'); btn.disabled = true; say(qmsg, 'Sending…', true);
         var qdata = Object.fromEntries(new FormData(reqForm)), qmail = String(qdata.email || '').trim();
         post(Object.assign({ form: 'officer_request' }, qdata)).then(function (res) {
-          say(qmsg, res.ok ? 'Thank you. An officer will check your request and email you a link to set up your sign-in. Please watch your ' + qmail + ' inbox, and check your spam or junk folder too: the email comes from SJFACC (fassj.admin@gmail.com). The link works for 48 hours.' : res.error, res.ok);
+          say(qmsg, res.ok ? 'Thank you. An officer will check your request and email you a link to set up your sign-in. Please watch your ' + qmail + ' inbox, and check your spam or junk folder too: the email comes from SJFACC\u2019s Gmail admin account. The link works for 48 hours.' : res.error, res.ok);
           if (res.ok) reqForm.reset();
         }).catch(function () { say(qmsg, 'Couldn’t send. Please try again.'); }).then(function () { btn.disabled = false; });
       });
