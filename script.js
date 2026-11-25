@@ -360,12 +360,13 @@
           var ul = document.createElement('ul'); ul.className = 'trustee-who';
           d.trustees.forEach(function (t) {
             var li = document.createElement('li'), ap = d.items.filter(function (it) { return t.decisions[it.id] === 'Approve'; }).length;
-            li.textContent = t.name + ': ' + (t.signed ? 'signed ' + t.when + ' · ' + ap + ' of ' + d.items.length + ' approved' : 'not signed yet');
+            var sb = document.createElement('span'); sb.className = 'badge lr-badge' + (t.signed ? ' lr-badge--done' : ''); sb.textContent = t.signed ? '✓ Signed' : 'Not signed'; li.appendChild(sb);   // same as ✓ Completed (Alex, 2026-11-25)
+            li.appendChild(document.createTextNode(' ' + t.name + (t.signed ? ': signed ' + t.when + ' · ' + ap + ' of ' + d.items.length + ' approved' : '')));
             ul.appendChild(li);
           });
           st.appendChild(ul); if (!info) card.appendChild(st);
           if (res.trustee && !info) {
-            var mine = (d.mine && d.mine.signed) ? d.mine.decisions : {};
+            var signed = !!(d.mine && d.mine.signed), mine = signed ? (d.mine.decisions || {}) : {};
             var form = document.createElement('form'); form.className = 'trustee-form';
             var hh = document.createElement('p'); hh.className = 'vote-head'; hh.textContent = d.mine && d.mine.signed ? 'Your decisions (you can sign again to change them)' : 'Your decisions'; form.appendChild(hh);
             d.items.forEach(function (it) {
@@ -373,7 +374,7 @@
               var lg = document.createElement('legend'); lg.textContent = it.label; row.appendChild(lg);
               if (it.detail) {   // what is being approved (spec §80 fix); several lines = numbered list (spec §94)
                 var dl = it.detail.split('\n');
-                if (dl.length > 1) { var ol = document.createElement('ol'); ol.className = 'trustee-detail trustee-detail-list'; dl.forEach(function (x) { var li = document.createElement('li'); li.textContent = x.replace(/^\d+\.\s*/, ''); ol.appendChild(li); }); row.appendChild(ol); }
+                if (dl.length > 1) { var ol = document.createElement('ol'); ol.className = 'trustee-detail trustee-detail-list'; dl.forEach(function (x) { var li = document.createElement('li'); li.textContent = x; /* carries its own number, e.g. 10.1. */ ol.appendChild(li); }); row.appendChild(ol); }
                 else { var dt = document.createElement('p'); dt.className = 'trustee-detail'; dt.textContent = it.detail; row.appendChild(dt); }
               }
               var note = document.createElement('input'); note.type = 'text'; note.name = 'note-' + it.id; note.placeholder = 'Why, or what should change?'; note.className = 'trustee-note'; note.hidden = !mine[it.id] || mine[it.id] === 'Approve';
@@ -391,8 +392,19 @@
             form.appendChild(cons);
             var sig = document.createElement('input'); sig.type = 'text'; sig.name = 'signature'; sig.autocomplete = 'name'; sig.className = 'trustee-sig';
             sig.placeholder = 'Type your full name: ' + res.name; form.appendChild(sig);
+            cb.checked = !!signed; sig.value = signed ? (d.mine.signature || '') : '';   // signed: keep the agreement and the typed name (Alex, 2026-11-25)
             var go = document.createElement('button'); go.type = 'submit'; go.className = 'btn btn-primary'; go.textContent = 'Sign and submit'; form.appendChild(go);
             var fm = document.createElement('p'); fm.className = 'form-msg'; fm.setAttribute('role', 'status'); form.appendChild(fm);
+            if (signed) {   // locked until "Change my decisions"
+              var lock = function (on) { Array.prototype.forEach.call(form.querySelectorAll('input'), function (x) { x.disabled = on; }); go.hidden = on; };
+              var sh = document.createElement('p'); sh.className = 'trustee-signed';
+              var sbd = document.createElement('span'); sbd.className = 'badge lr-badge lr-badge--done'; sbd.textContent = '✓ Signed'; sh.appendChild(sbd);
+              sh.appendChild(document.createTextNode(' ' + (d.mine.when ? 'on ' + d.mine.when : '')));
+              form.insertBefore(sh, go);
+              var chg = document.createElement('button'); chg.type = 'button'; chg.className = 'btn btn-outline'; chg.textContent = 'Change my decisions';
+              chg.addEventListener('click', function () { lock(false); chg.hidden = true; sh.hidden = true; cb.checked = false; sig.value = ''; form.dataset.dirty = '1'; });
+              form.insertBefore(chg, go); lock(true);
+            }
             form.addEventListener('submit', function (e) {
               e.preventDefault();
               var dec = {}, notes = {};
