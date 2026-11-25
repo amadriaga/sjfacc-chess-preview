@@ -18,7 +18,7 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="/styles.css?v=58a2db41d6">
+  <link rel="stylesheet" href="/styles.css?v=e0cb2aa1c3">
 </head>
 <body>
   <div style="background:#b8913a;color:#0f1b2d;font:600 13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;text-align:center;padding:7px 16px">Welcome to the Official SJFACC interim website &mdash; fully operational &middot; <a href="/register.html" style="color:#0f1b2d;text-decoration:underline">Registration is now open! &rarr;</a></div>
@@ -72,8 +72,11 @@
           </form>
           <form class="officer-login officer-request" id="request" autocomplete="on" data-request-form>
             <h3>New SJFACC officer? Request access</h3>
-            <p class="note" style="margin:0 0 10px">An SJFACC Officer will review your request and email you a link to set up your sign-in code. In the meantime, please download <b>Google Authenticator</b> from the Apple App Store: scan this QR code with your iPhone camera (or tap it on your iPhone).</p>
-            <a class="auth-qr" href="https://apps.apple.com/us/app/google-authenticator/id388497605" target="_blank" rel="noopener"><img src="/assets/qr-google-authenticator-ios.svg" alt="QR code: Google Authenticator on the Apple App Store" width="132" height="132"><span>Google Authenticator<br>Apple App Store</span></a>
+            <p class="note" style="margin:0 0 10px">An SJFACC Officer will review your request and email you a link to set up your sign-in code. In the meantime, please download <b>Google Authenticator</b> on your phone: scan the QR code for your phone with its camera (or tap it on your phone).</p>
+            <div class="auth-qrs">
+              <a class="auth-qr" href="https://apps.apple.com/us/app/google-authenticator/id388497605" target="_blank" rel="noopener"><img src="/assets/qr-google-authenticator-ios.svg" alt="QR code: Google Authenticator on the Apple App Store" width="132" height="132"><span><img class="auth-icon" src="/assets/icon-apple.svg" alt="" width="26" height="26">iPhone<br><small>Apple App Store</small></span></a>
+              <a class="auth-qr" href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener"><img src="/assets/qr-google-authenticator-android.svg" alt="QR code: Google Authenticator on Google Play" width="132" height="132"><span><img class="auth-icon" src="/assets/icon-android.svg" alt="" width="26" height="26">Android<br><small>Google Play</small></span></a>
+            </div>
             <input type="hidden" name="group" value="club">
             <div class="officer-fields request-fields">
               <label>Full name<input type="text" name="name" required autocomplete="name"></label>
@@ -244,7 +247,7 @@
       </div>
       <div class="footer-bottom">
         <span>&copy; <span data-year>2026</span> South Jersey Filipino-American Chess Community, Inc.</span>
-        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 288 · Nov 25, 2026</span></span>
+        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 289 · Nov 25, 2026</span></span>
       </div>
     </div>
   </footer>
