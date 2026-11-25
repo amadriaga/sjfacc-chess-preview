@@ -566,7 +566,7 @@
           var suggest = function (deny) {   // spec §45: pre-filled, editable
             if (f.nameOk === false) return deny
               ? 'We can\u2019t accept this membership form because the player\u2019s name (\u201c' + f.name + '\u201d) isn\u2019t a real first and last name. You\u2019re very welcome to sign up again using the player\u2019s real name.'
-              : 'Thank you for signing up! The player\u2019s name on the form (\u201c' + f.name + '\u201d) looks like a username. For club records, membership forms need the player\u2019s real first and last name. Could you please update it on the Change my registration page (link below)? We\u2019ll approve the form as soon as it\u2019s updated.';
+              : 'Thank you for signing up! The player\u2019s name on the form (\u201c' + f.name + '\u201d) looks like a username. For SJFACC's records, membership forms need the player\u2019s real first and last name. Could you please update it on the Change my registration page (link below)? We\u2019ll approve the form as soon as it\u2019s updated.';
             return deny
               ? 'We\u2019re sorry, but we can\u2019t approve this membership form because '
               : 'Thank you for signing up for SJFACC! Before we approve the form, could you please ';
