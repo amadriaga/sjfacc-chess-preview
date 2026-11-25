@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Chess pawn">
+  <defs>
+    <radialGradient id="pw-head" cx="38%" cy="32%" r="70%">
+      <stop offset="0" stop-color="#8fa3c2"/><stop offset=".35" stop-color="#2f4466"/><stop offset=".8" stop-color="#121e33"/><stop offset="1" stop-color="#070d18"/>
+    </radialGradient>
+    <linearGradient id="pw-body" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#070d18"/><stop offset=".28" stop-color="#3c5276"/><stop offset=".42" stop-color="#6b81a3"/><stop offset=".6" stop-color="#22324d"/><stop offset="1" stop-color="#060b15"/>
+    </linearGradient>
+    <linearGradient id="pw-gold" x1="0" x2="1">
+      <stop offset="0" stop-color="#7a5a1c"/><stop offset=".4" stop-color="#e8c66a"/><stop offset=".6" stop-color="#b8862b"/><stop offset="1" stop-color="#5e4414"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="32" cy="59" rx="19" ry="3" fill="#000" opacity=".2"/>
+  <path d="M13 57.5c0-4 2.5-6.5 6-7h26c3.5.5 6 3 6 7z" fill="url(#pw-body)"/>
+  <ellipse cx="32" cy="50.6" rx="13" ry="2.4" fill="url(#pw-gold)"/>
+  <path d="M20.5 50.5c2.2-7.5 5.6-13 6-19.5h11c.4 6.5 3.8 12 6 19.5z" fill="url(#pw-body)"/>
+  <ellipse cx="32" cy="31" rx="10" ry="2.8" fill="url(#pw-gold)"/>
+  <ellipse cx="32" cy="29.6" rx="7.5" ry="1.8" fill="url(#pw-body)"/>
+  <circle cx="32" cy="19.5" r="9.5" fill="url(#pw-head)"/>
+  <ellipse cx="28.6" cy="15.6" rx="3" ry="2" fill="#fff" opacity=".45" transform="rotate(-30 28.6 15.6)"/>
+</svg>
