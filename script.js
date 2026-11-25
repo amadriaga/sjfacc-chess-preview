@@ -271,6 +271,37 @@
         });
       }).catch(function () { say(msg, 'Couldn\u2019t load the invoices.'); });
     };
+    // spec §93: Legal Requirements tab: the formation steps, start to finish, ticked when completed (who and when saved)
+    var loadLegal = function () {
+      var lt = document.getElementById('tab-legal'), ll = document.getElementById('legal-list'), lm = document.getElementById('legal-msg'), lp = document.getElementById('legal-progress');
+      if (!lt || !ll) return;
+      var draw = function (res) {
+        if (!res.ok) { lt.hidden = true; return; }
+        lt.hidden = false; ll.innerHTML = '';
+        lp.textContent = res.done + ' of ' + res.total + ' complete';
+        var phase = '';
+        res.items.forEach(function (q) {
+          if (q.phase !== phase) { phase = q.phase; var h = document.createElement('h3'); h.className = 'lr-phase'; h.textContent = phase; ll.appendChild(h); }
+          var card = document.createElement('div'); card.className = 'doc-card-o lr-card' + (q.done ? ' lr-card--done' : '');
+          var top = document.createElement('div'); top.className = 'lr-top';
+          var b = document.createElement('span'); b.className = 'badge lr-badge' + (q.done ? ' lr-badge--done' : ''); b.textContent = q.done ? '✓ Completed' : 'Open'; top.appendChild(b);
+          var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t); card.appendChild(top);
+          var d = document.createElement('p'); d.className = 'trustee-meta'; d.textContent = q.detail + (q.due ? ' Due: ' + q.due + '.' : ''); card.appendChild(d);
+          if (q.by || q.at) { var w = document.createElement('p'); w.className = 'by'; w.textContent = (q.done ? 'Completed' : 'Marked not completed') + ' by ' + (q.by || '—') + (q.at ? ' on ' + q.at : '') + (q.note ? ' · ' + q.note : ''); card.appendChild(w); }
+          var lab = document.createElement('label'); lab.className = 'lr-tick'; var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = q.done;
+          lab.appendChild(cb); lab.appendChild(document.createTextNode(' Completed')); card.appendChild(lab);
+          cb.addEventListener('change', function () {
+            cb.disabled = true; say(lm, 'Saving…', true);
+            post({ form: 'officer_legal_req_set', token: tok(), id: q.id, done: cb.checked ? 'yes' : 'no' }).then(function (r) {
+              if (!r.ok) { cb.checked = !cb.checked; cb.disabled = false; say(lm, r.error || 'Couldn’t save. Please try again.'); return; }
+              say(lm, 'Saved.', true); draw(r);
+            }).catch(function () { cb.checked = !cb.checked; cb.disabled = false; say(lm, 'Couldn’t save. Please try again.'); });
+          });
+          ll.appendChild(card);
+        });
+      };
+      post({ form: 'officer_legal_reqs', token: tok() }).then(draw).catch(function () { lt.hidden = true; });
+    };
     // spec §80: trustee approvals with a typed electronic signature (tab shown only to trustees and owners)
     var loadTrustees = function () {
       var tlist = document.getElementById('trustee-list'), tmsg = document.getElementById('trustee-msg'), ttab = document.getElementById('tab-trustees');
@@ -389,6 +420,7 @@
         if (has('officers')) { loadRequests(); loadOfficers(); }
         if (res.owner) { loadAdmin(); loadSignIns(); loadTrusteeEmails(); }
         loadTrustees();   // spec §80
+        loadLegal();   // spec §93
         loadTreasurer();  // spec §84
         olog.classList.add('hidden'); opan.classList.remove('hidden'); obody.innerHTML = '';
         if (!res.forms.length) { var p0 = document.createElement('p'); p0.className = 'note'; p0.textContent = 'No signed forms yet.'; obody.appendChild(p0); return; }

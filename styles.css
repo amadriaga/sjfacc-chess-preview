@@ -951,3 +951,11 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .logo-story p { margin: 0 0 10px; }
 .logo-story .crest-list { margin: 0 0 10px; }
 @media (max-width: 860px) { .corp-emblem { width: 140px; margin-right: 16px; } }
+
+/* Legal Requirements tab (spec §93) */
+.lr-progress { font-weight: 600; color: var(--ink); margin: 0 0 6px; }
+.lr-phase { font-size: 1rem; margin: 18px 0 8px; }
+.lr-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.lr-badge--done { background: #e6f4ea; color: #1e6b34; border-color: #9fd3ae; }
+.lr-card--done { background: #fbfdfb; }
+.lr-tick { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; font-weight: 600; cursor: pointer; }
