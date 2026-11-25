@@ -227,7 +227,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 .officer-photo svg { width: 64px; height: 64px; margin-top: 10px; }
 .officer-photo img { width: 68px; height: 68px; }
 .officer h3 { font-size: 1.1rem; margin: 0 0 4px; }
-.officer-name { font-family: var(--serif); font-size: 1.05rem; margin: 0 0 4px; color: var(--ink); }
+.officer-name { font-family: 'FASSJ Dots', var(--serif); font-size: 1.2rem; letter-spacing: .05em; line-height: 1.2; margin: 2px 0 6px; color: var(--ink); }   /* tally-board dot font (spec §90) */
 .officer-status { font-size: .74rem !important; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold) !important; }
 .officers-sub { margin: 36px 0 16px; font-size: 1.15rem; }
 @media (max-width: 960px) { .officers { grid-template-columns: repeat(2, 1fr); } }
