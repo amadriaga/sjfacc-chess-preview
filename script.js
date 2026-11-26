@@ -1570,6 +1570,17 @@
     fromHash();
   }
 
+  // Founders' Coin: Flip button turns the coin over (Alex, 2026-11-26, spec §107)
+  Array.prototype.forEach.call(document.querySelectorAll('[data-coin-flip]'), function (box) {
+    var card = box.querySelector('.coin-flip-card'), btn = box.querySelector('.coin-flip-btn');
+    var flip = function () {
+      var back = box.classList.toggle('flipped');
+      card.setAttribute('aria-pressed', String(back));
+      card.setAttribute('aria-label', 'The Founders\u2019 Coin, ' + (back ? 'back' : 'front') + '. Click to flip it over');
+    };
+    card.addEventListener('click', flip); if (btn) btn.addEventListener('click', flip);
+  });
+
   // Forms send to Formspree in the background and say thank you on the same page.
   // Until a real form ID replaces FORM_ID_PENDING, nothing is sent. Without this script, Formspree's own thank-you page is the fallback.
   var forms = document.querySelectorAll('form[data-formspree]');
