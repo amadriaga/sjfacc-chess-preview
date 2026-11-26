@@ -1054,3 +1054,6 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .coin-flip-card:focus-visible { outline: 3px solid var(--gold); outline-offset: 6px; border-radius: 50%; }
 .coin-flip-btn { font: inherit; cursor: pointer; background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.55); }
 @media (prefers-reduced-motion: reduce) { .coin-face { transition: none; } }
+.coin-flip-card--photo { width: min(100%, 420px); aspect-ratio: 1200 / 896; }
+.coin-flip-card--photo .coin-face img { object-fit: cover; border-radius: 10px; filter: none; box-shadow: 0 10px 24px rgba(0,0,0,.4); }
+.coin-media.coin-flip { justify-items: center; }

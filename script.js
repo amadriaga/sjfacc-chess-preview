@@ -1572,13 +1572,15 @@
 
   // Founders' Coin: Flip button turns the coin over (Alex, 2026-11-26, spec §107)
   Array.prototype.forEach.call(document.querySelectorAll('[data-coin-flip]'), function (box) {
-    var card = box.querySelector('.coin-flip-card'), btn = box.querySelector('.coin-flip-btn');
-    var flip = function () {
+    var cards = box.querySelectorAll('.coin-flip-card'), btn = box.querySelector('.coin-flip-btn');
+    var flip = function () {   // the coin and the lying-down photo turn over together
       var back = box.classList.toggle('flipped');
-      card.setAttribute('aria-pressed', String(back));
-      card.setAttribute('aria-label', 'The Founders\u2019 Coin, ' + (back ? 'back' : 'front') + '. Click to flip it over');
+      Array.prototype.forEach.call(cards, function (c) {
+        c.setAttribute('aria-pressed', String(back));
+        c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/, (front|back)\. /, ', ' + (back ? 'back' : 'front') + '. '));
+      });
     };
-    card.addEventListener('click', flip); if (btn) btn.addEventListener('click', flip);
+    Array.prototype.forEach.call(cards, function (c) { c.addEventListener('click', flip); }); if (btn) btn.addEventListener('click', flip);
   });
 
   // Forms send to Formspree in the background and say thank you on the same page.
