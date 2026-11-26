@@ -187,7 +187,7 @@ fieldset { border: 0; padding: 0; margin: 0; }
 
 /* Footer */
 .site-footer { background: #0b1422; color: #8f9bb0; padding: 64px 0 36px; font-size: .92rem; }
-.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; padding-bottom: 40px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
+.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 32px; padding-bottom: 40px; border-bottom: 1px solid rgba(255, 255, 255, .08); }
 .site-footer .brand { color: #fff; margin-bottom: 14px; }
 .site-footer .brand-sub { color: #8f9bb0; }
 .site-footer h4 { color: #fff; font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 14px; font-weight: 600; }
@@ -1066,3 +1066,31 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .verify-ok { border: 2px solid #b8913a; background: #fffaf0; } .verify-ok .verify-title { color: #1f6b33; }
 .verify-bad { border: 2px solid #b3261e; background: #fff5f4; } .verify-bad .verify-title { color: #8a1f1f; }
 .verify-how ol { padding-left: 1.3em; } .verify-how li { margin: 6px 0; }
+.founder-town { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; color: var(--muted); font-weight: 600; }
+.founder-town img { height: 40px; width: auto; }
+
+/* Partners as an airport departures board (Alex, 2026-11-26, spec §109) */
+.dep { background: #0b1526; border-radius: 12px; overflow-x: auto; box-shadow: 0 14px 30px rgba(0,0,0,.25); border: 1px solid #1d2b44; }
+.dep-head { background: linear-gradient(180deg,#1f4fa3,#173e86); color: #fff; font-size: 1.5rem; font-weight: 600; padding: 10px 18px; display: flex; align-items: center; gap: 12px; letter-spacing: .02em; min-width: 640px; }
+.dep-icon { font-size: 1.4rem; }
+.dep-cols, .dep-row > summary { display: grid; grid-template-columns: 92px 1.25fr 1fr .9fr 28px; gap: 14px; align-items: center; min-width: 640px; }
+.dep-cols { padding: 8px 14px 4px; color: #cfd8e6; font-size: .78rem; text-transform: none; }
+.dep-row { border-top: 1px solid #1b2840; }
+.dep-row > summary { list-style: none; cursor: pointer; padding: 8px 14px; }
+.dep-row > summary::-webkit-details-marker { display: none; }
+.dep-row > summary:hover { background: #101e36; } .dep-row > summary:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+.dep-logo { background: #fff; border-radius: 6px; height: 46px; display: flex; align-items: center; justify-content: center; padding: 4px 6px; }
+.dep-logo img { max-height: 38px; max-width: 80px; width: auto; height: auto; display: block; }
+.flap { display: flex; gap: 2px; flex-wrap: nowrap; }
+.flap i { font-style: normal; display: inline-block; min-width: .95em; text-align: center; font-family: 'DejaVu Sans Mono', ui-monospace, Menlo, Consolas, monospace; font-weight: 700; font-size: 1.05rem; line-height: 1.55; color: #f3e7b5;
+  background: linear-gradient(180deg,#1c1f26 0 49%,#0a0c10 49% 51%,#16191f 51%); border-radius: 2px; box-shadow: inset 0 0 0 1px #000; }
+.dep-more { color: #cfd8e6; font-size: .9rem; transition: transform .2s; text-align: center; }
+.dep-row[open] .dep-more { transform: rotate(180deg); }
+.dep-body { background: #fff; padding: 16px 20px 18px; color: var(--text); }
+.dep-body h3 { margin-top: 0; }
+@media (max-width: 700px) { .flap i { font-size: .9rem; } }
+.dep-logo--dark { background: #0f1b2d; box-shadow: inset 0 0 0 1px #2a3b5a; }
+.dep { max-width: 100%; width: 100%; } #partners { min-width: 0; max-width: 100%; }
+.prose-page { max-width: 760px; } .prose-page h2 { margin-top: 28px; } .prose-page ul { padding-left: 1.2em; } .prose-page li { margin: 6px 0; }
+.sitemap li { margin: 10px 0; }
+.store-line { display: inline-flex; align-items: center; gap: 5px; } .store-icon { width: 16px; height: 16px; object-fit: contain; }
