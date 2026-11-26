@@ -1136,3 +1136,5 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .contest-pass .contest-seal { filter: drop-shadow(0 6px 10px rgba(15,27,45,.35)); }
 .dep-logo { box-shadow: 0 3px 8px rgba(0,0,0,.4); }
 .dep-logo img { filter: drop-shadow(0 1px 2px rgba(15,27,45,.25)); }
+.dep-icon { display: inline-flex; color: var(--gold); } .dep-icon svg { display: block; }
+.auth-badge { display: flex; flex-direction: column; align-items: center; gap: 6px; } .auth-badge img { height: 40px; width: auto; display: block; } .auth-badge img[src*="google-play"] { height: 52px; margin: -6px 0; }
