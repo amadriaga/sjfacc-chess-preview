@@ -330,7 +330,7 @@ legend { font-weight: 600; font-size: .92rem; color: var(--ink); }
 
 /* Facebook QR tile (Home, About Us, Contact; 2026-11-20) */
 .cta-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: flex-end; }
-.fb-qr { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; background: #fff; color: #000; border-radius: 0; padding: 6px 6px 8px; text-decoration: none; font-size: .9rem; font-weight: 800; line-height: 1.2; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.fb-qr { display: inline-flex; flex-direction: column; align-items: center; gap: 0; background: #fff; color: #000; border-radius: 0; padding: 6px; aspect-ratio: 1 / 1; text-decoration: none; font-size: .9rem; font-weight: 800; line-height: 1.2; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
 .fb-qr img { width: 120px; height: 120px; display: block; }
 .fb-qr:hover { box-shadow: 0 0 0 2px var(--gold); }
 .fb-qr--light { margin-top: 28px; border: 1px solid var(--line); box-shadow: var(--shadow); }
@@ -1008,3 +1008,4 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .promo-pass .promo-actions .btn-ghost { color: var(--ink); border-color: var(--ink); }
 .promo-pass .promo-actions .btn-ghost:hover { background: rgba(15,27,45,.06); }
 .promo-pass .promo-pic--pass img { filter: drop-shadow(0 10px 16px rgba(15,27,45,.22)); }
+.promo-coin .note a { color: #fff; text-decoration: underline; }
