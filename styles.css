@@ -330,8 +330,8 @@ legend { font-weight: 600; font-size: .92rem; color: var(--ink); }
 
 /* Facebook QR tile (Home, About Us, Contact; 2026-11-20) */
 .cta-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; justify-content: flex-end; }
-.fb-qr { display: inline-flex; align-items: center; gap: 12px; background: #fff; color: var(--ink); border-radius: 10px; padding: 10px 14px 10px 10px; text-decoration: none; font-size: .85rem; font-weight: 600; line-height: 1.3; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
-.fb-qr img { width: 104px; height: 104px; display: block; }
+.fb-qr { display: inline-flex; flex-direction: column; align-items: center; gap: 2px; background: #fff; color: #000; border-radius: 0; padding: 6px 6px 8px; text-decoration: none; font-size: .9rem; font-weight: 800; line-height: 1.2; box-shadow: 0 6px 18px rgba(0,0,0,.18); }
+.fb-qr img { width: 120px; height: 120px; display: block; }
 .fb-qr:hover { box-shadow: 0 0 0 2px var(--gold); }
 .fb-qr--light { margin-top: 28px; border: 1px solid var(--line); box-shadow: var(--shadow); }
 @media (max-width: 780px) { .cta-actions { justify-content: flex-start; } .fb-qr img { width: 88px; height: 88px; } }
