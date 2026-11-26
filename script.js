@@ -857,7 +857,7 @@
         });
       }).catch(function () { say(dmsg, 'Couldn’t load the documents. Please try again.'); });
     };
-    var AREA_NAMES = [['registrations', 'Registrations'], ['contest', 'T-shirt contest'], ['documents', 'Board documents'], ['officers', 'Officers']];
+    var AREA_NAMES = [['registrations', 'Registrations'], ['contest', 'T-shirt contest'], ['documents', 'Approvals'], ['officers', 'Officers']];
     var areaText = function (r) { return r === 'all' ? 'Everything' : String(r || 'documents').split(/\s*,\s*/).map(function (a) { var n = AREA_NAMES.filter(function (x) { return x[0] === a; })[0]; return n ? n[1] : a; }).join(', '); };
     var roleChooser = function (current, canInv) {   // tick boxes for areas (only the club account invites, spec §52 v39)
       var box = document.createElement('div'); box.className = 'role-chooser';
