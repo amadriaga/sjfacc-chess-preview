@@ -1057,3 +1057,4 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .coin-flip-card--photo { width: min(100%, 420px); aspect-ratio: 1200 / 896; }
 .coin-flip-card--photo .coin-face img { object-fit: cover; border-radius: 10px; filter: none; box-shadow: 0 10px 24px rgba(0,0,0,.4); }
 .coin-media.coin-flip { justify-items: center; }
+.auth-icon--logo { width: auto; height: 50px; display: block; margin: 0 auto 4px; }
