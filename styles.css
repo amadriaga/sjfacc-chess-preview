@@ -1022,3 +1022,14 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .review-badge { display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; font-size: .75rem; font-weight: 700; vertical-align: middle; }
 .review-wait { background: #f1ead9; color: #6b5a2e; } .review-ok { background: #e3f3e6; color: #1f6b33; } .review-no { background: #f8e1e1; color: #8a1f1f; } .review-warn { background: #fdf1d8; color: #7a5410; }
 .review-note { display: block; width: 100%; max-width: 560px; margin: 8px 0; font: inherit; padding: 6px 8px; border: 1px solid var(--line); border-radius: 6px; }
+
+/* Partners: collapsible, logo header only until opened (Alex, 2026-11-26, spec §108) */
+details.partner { padding: 0; align-self: start; }
+details.partner > summary.partner-sum { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+details.partner > summary.partner-sum::-webkit-details-marker { display: none; }
+details.partner > summary .partner-logo { flex: 1; margin: 0; }
+.partner-more { width: 12px; height: 12px; border-right: 2px solid var(--ink); border-bottom: 2px solid var(--ink); transform: rotate(45deg); transition: transform .2s; flex: none; margin-right: 4px; }
+details.partner[open] .partner-more { transform: rotate(-135deg); }
+details.partner > summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.partner-body { padding: 0 20px 20px; }
+.founder-aff { color: var(--muted); font-size: .92rem; margin-top: 4px; }
