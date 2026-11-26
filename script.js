@@ -1025,6 +1025,8 @@
         document.body.appendChild(a); a.click(); a.remove(); say(rvMsg, '');
       }).catch(function () { say(rvMsg, 'Couldn\u2019t open the document. Please try again.'); }).then(function () { btn.disabled = false; });
     };
+    var rvOpenState = {};   // which groups / cards are open (kept across reloads); all closed by default (Alex, 2026-11-26)
+    var rvDetails = function (key, cls) { var d = document.createElement('details'); d.className = cls; d.open = !!rvOpenState[key]; d.addEventListener('toggle', function () { rvOpenState[key] = d.open; }); return d; };
     var RV_GROUPS = [['board', 'For the Board tab (trustees)'], ['approvals', 'For the Approvals tab (officers)'], ['', 'Download only']];
     var loadReview = function () {
       if (!rvList) return;
@@ -1035,12 +1037,12 @@
         if (!res.docs.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
         RV_GROUPS.forEach(function (g) {
           var docs = res.docs.filter(function (d) { return d.target === g[0]; }); if (!docs.length) return;
-          var gh = document.createElement('h4'); gh.className = 'review-group'; gh.textContent = g[1] + ' (' + docs.length + ')'; rvList.appendChild(gh);
+          var gbox = rvDetails('g:' + g[0], 'review-groupbox'), gh = document.createElement('summary'); gh.className = 'review-group'; gh.textContent = g[1] + ' (' + docs.length + ')'; gbox.appendChild(gh); rvList.appendChild(gbox);
           docs.forEach(function (d) {
-            var card = document.createElement('div'); card.className = 'doc-card-o doc-body review-card';
-            var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = (d.docno ? d.docno + ' \u00b7 ' : '') + d.title; card.appendChild(h);
+            var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
+            var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = (d.docno ? d.docno + ' \u00b7 ' : '') + d.title; sm.appendChild(h); card.appendChild(sm);
             var badge = document.createElement('span'), st = { Approve: ['\u2713 Approved', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
-            badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; card.appendChild(badge);
+            badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge);
             var mt = document.createElement('p'); mt.className = 'trustee-meta';
             mt.textContent = (/^\d+\.\d/.test(d.version) ? 'Version ' + d.version : 'Built ' + d.version) + ' \u00b7 pushed ' + d.pushed + (d.target ? ' \u00b7 ' + (d.replaces ? 'replaces the live file' : 'new document') : '');
             card.appendChild(mt);
@@ -1061,7 +1063,7 @@
               });
               acts.appendChild(bt);
             });
-            card.appendChild(note); card.appendChild(acts); rvList.appendChild(card);
+            card.appendChild(note); card.appendChild(acts); gbox.appendChild(card);
           });
         });
       }).catch(function () { say(rvMsg, 'Couldn\u2019t load the documents. Please try again.'); });

@@ -1033,3 +1033,12 @@ details.partner[open] .partner-more { transform: rotate(-135deg); }
 details.partner > summary:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
 .partner-body { padding: 0 20px 20px; }
 .founder-aff { color: var(--muted); font-size: .92rem; margin-top: 4px; }
+.coin-media { display: grid; gap: 14px; min-width: 0; }
+.coin-photos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.coin-photo { padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 24px rgba(0,0,0,.4); }
+.coin-photo img { display: block; width: 100%; height: auto; }
+.coin-photo:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+.review-groupbox { margin: 10px 0; border: 1px solid var(--line); border-radius: 10px; padding: 0 12px; background: #fff; }
+.review-groupbox > summary.review-group { cursor: pointer; padding: 12px 0; margin: 0; font-weight: 700; }
+.review-groupbox[open] > summary.review-group { border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+details.review-card { margin: 8px 0; } details.review-card > summary.review-sum { cursor: pointer; list-style-position: inside; }
