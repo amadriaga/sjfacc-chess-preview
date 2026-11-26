@@ -986,3 +986,10 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .td-group[open] > summary.lr-phase::before { content: '\25BE'; }
 .td-group > summary .lr-badge { margin-left: auto; padding: 3px 8px; font-size: .68rem; }
 .td-group > .trustee-card { margin: 0 12px 12px; }
+
+/* Commemorative Founders' Coin promo (spec §103, 2026-11-26): coins cut out with their own shadow, no box behind */
+.promo-coin { border-top: 0; }
+.promo-coin .promo-inner { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); }
+.promo-pic--coin { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
+.promo-coin .note { margin-top: 10px !important; color: #d4b06a !important; font-weight: 600; }
+@media (max-width: 780px) { .promo-coin .promo-inner { grid-template-columns: 1fr; } .promo-pic--coin { max-width: 100%; } }
