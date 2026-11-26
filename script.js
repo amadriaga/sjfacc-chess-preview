@@ -1010,8 +1010,62 @@
       b.addEventListener('click', function () {
         Array.prototype.forEach.call(document.querySelectorAll('#admin .subtab'), function (x) { x.setAttribute('aria-selected', String(x === b)); });
         Array.prototype.forEach.call(document.querySelectorAll('#admin .admin-sub'), function (sec) { sec.hidden = sec.id !== b.getAttribute('data-sub'); });
+        if (b.getAttribute('data-sub') === 'admin-downloads') loadReview();
       });
     });
+    // spec §106: Admin -> Downloads: review every pushed PDF (View, Download, Approve, Deny, Revise)
+    var rvList = document.getElementById('review-list'), rvMsg = document.getElementById('review-msg');
+    var rvOpen = function (d, btn, download) {
+      btn.disabled = true; say(rvMsg, 'Opening ' + d.title + '\u2026', true);
+      post({ form: 'admin_review_doc', token: tok(), id: d.id }).then(function (res) {
+        if (res.signedOut) return signOut(res.error);
+        if (!res.ok) return say(rvMsg, res.error);
+        var a = document.createElement('a'); a.href = URL.createObjectURL(b64Blob(res.data, res.mime)); a.rel = 'noopener';
+        if (download) a.download = res.name; else a.target = '_blank';
+        document.body.appendChild(a); a.click(); a.remove(); say(rvMsg, '');
+      }).catch(function () { say(rvMsg, 'Couldn\u2019t open the document. Please try again.'); }).then(function () { btn.disabled = false; });
+    };
+    var RV_GROUPS = [['board', 'For the Board tab (trustees)'], ['approvals', 'For the Approvals tab (officers)'], ['', 'Download only']];
+    var loadReview = function () {
+      if (!rvList) return;
+      post({ form: 'admin_review_list', token: tok() }).then(function (res) {
+        if (res.signedOut) return signOut(res.error);
+        rvList.innerHTML = '';
+        if (!res.ok) { say(rvMsg, res.error); return; }
+        if (!res.docs.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
+        RV_GROUPS.forEach(function (g) {
+          var docs = res.docs.filter(function (d) { return d.target === g[0]; }); if (!docs.length) return;
+          var gh = document.createElement('h4'); gh.className = 'review-group'; gh.textContent = g[1] + ' (' + docs.length + ')'; rvList.appendChild(gh);
+          docs.forEach(function (d) {
+            var card = document.createElement('div'); card.className = 'doc-card-o doc-body review-card';
+            var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = (d.docno ? d.docno + ' \u00b7 ' : '') + d.title; card.appendChild(h);
+            var badge = document.createElement('span'), st = { Approve: ['\u2713 Approved', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
+            badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; card.appendChild(badge);
+            var mt = document.createElement('p'); mt.className = 'trustee-meta';
+            mt.textContent = (/^\d+\.\d/.test(d.version) ? 'Version ' + d.version : 'Built ' + d.version) + ' \u00b7 pushed ' + d.pushed + (d.target ? ' \u00b7 ' + (d.replaces ? 'replaces the live file' : 'new document') : '');
+            card.appendChild(mt);
+            if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': \u201c' + d.note + '\u201d' : ''); card.appendChild(dn); }
+            var acts = document.createElement('div'); acts.className = 'officer-actions';
+            var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + d.title);
+            [['View', 'btn-outline'], ['Download', 'btn-outline'], ['Approve', 'btn-primary'], ['Deny', 'btn-outline'], ['Revise', 'btn-outline']].forEach(function (b) {
+              var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn btn-sm ' + b[1]; bt.textContent = b[0];
+              bt.addEventListener('click', function () {
+                if (b[0] === 'View' || b[0] === 'Download') return rvOpen(d, bt, b[0] === 'Download');
+                if (b[0] !== 'Approve' && !note.value.trim()) { note.focus(); return say(rvMsg, 'Please add a note saying why or what to change.'); }
+                bt.disabled = true; say(rvMsg, (b[0] === 'Approve' && d.target ? 'Approving and publishing ' : 'Saving ') + d.title + '\u2026', true);
+                post({ form: 'admin_review_decide', token: tok(), id: d.id, decision: b[0], note: note.value }).then(function (r) {
+                  if (r.signedOut) return signOut(r.error);
+                  if (!r.ok) return say(rvMsg, r.error);
+                  say(rvMsg, d.title + ': ' + r.message, true); loadReview();
+                }).catch(function () { say(rvMsg, 'Couldn\u2019t save. Please try again.'); }).then(function () { bt.disabled = false; });
+              });
+              acts.appendChild(bt);
+            });
+            card.appendChild(note); card.appendChild(acts); rvList.appendChild(card);
+          });
+        });
+      }).catch(function () { say(rvMsg, 'Couldn\u2019t load the documents. Please try again.'); });
+    };
     // spec §83: trustee emails: View email (exactly as sent) and Send email (typed SEND confirmation)
     var tdList = document.getElementById('tdoc-list'), tdMsg = document.getElementById('tdoc-msg');
     var loadTrusteeEmails = function () {
