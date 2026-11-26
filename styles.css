@@ -988,8 +988,23 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .td-group > .trustee-card { margin: 0 12px 12px; }
 
 /* Commemorative Founders' Coin promo (spec §103, 2026-11-26): coins cut out with their own shadow, no box behind */
-.promo-coin { border-top: 0; }
+.promo-coin { border-top: 3px solid var(--gold); }
 .promo-coin .promo-inner { grid-template-columns: minmax(0, 480px) minmax(0, 1fr); }
 .promo-pic--coin { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
 .promo-coin .note { margin-top: 10px !important; color: #d4b06a !important; font-weight: 600; }
 @media (max-width: 780px) { .promo-coin .promo-inner { grid-template-columns: 1fr; } .promo-pic--coin { max-width: 100%; } }
+.coin-terms { margin: 14px 0 0; padding-left: 1.2em; color: #c9d2df; max-width: 56ch; }
+.coin-terms li { margin: 4px 0; } .coin-terms b { color: #fff; }
+
+/* Season Pass section on white, so home sections alternate navy / white / navy (Alex, 2026-11-26) */
+.promo-pass { background: #fff; color: var(--text); border-top: 0; border-bottom: 0; }
+.promo-pass .promo-text h2 { color: var(--ink); }
+.promo-pass .promo-text p:not(.promo-ribbon) { color: var(--text); }
+.promo-pass .pass-dates li { border-color: rgba(184,145,58,.5); background: var(--ivory); }
+.promo-pass .pass-dates b { color: #8a6a24; } .promo-pass .pass-dates span { color: var(--muted); }
+.promo-pass .promo-text p.note { color: var(--muted); }
+.promo-pass .promo-text p.pass-deadline { color: var(--text); background: rgba(212,176,106,.14); }
+.promo-pass .pass-deadline b, .promo-pass .promo-text b { color: var(--ink); }
+.promo-pass .promo-actions .btn-ghost { color: var(--ink); border-color: var(--ink); }
+.promo-pass .promo-actions .btn-ghost:hover { background: rgba(15,27,45,.06); }
+.promo-pass .promo-pic--pass img { filter: drop-shadow(0 10px 16px rgba(15,27,45,.22)); }
