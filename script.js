@@ -1579,6 +1579,35 @@
     });
   });
 
+  // spec §108: verify a Founders' Coin. The QR on the certificate opens /verify.html?c=<number>.<signature>.
+  // The signature is checked here with SJFACC's public key (ECDSA P-256); the registry (owner, status) comes from the sheet script.
+  var cmain = document.querySelector('main[data-coin-api]'), cres = document.getElementById('verify-result');
+  if (cmain && cres) {
+    var b64u = function (t) { t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; var b = atob(t), u = new Uint8Array(b.length); for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+    var show = function (ok, title, lines) {
+      cres.className = 'verify-result ' + (ok ? 'verify-ok' : 'verify-bad'); cres.innerHTML = '';
+      var h = document.createElement('p'); h.className = 'verify-title'; h.textContent = (ok ? '\u2713 ' : '\u2717 ') + title; cres.appendChild(h);
+      lines.forEach(function (l) { var p = document.createElement('p'); p.textContent = l; cres.appendChild(p); });
+    };
+    var c = new URLSearchParams(location.search).get('c') || '', dot = c.lastIndexOf('.');
+    var num = dot > 0 ? c.slice(0, dot).toUpperCase() : '', sig = dot > 0 ? c.slice(dot + 1) : '';
+    if (c && (!/^FC27-(G?\d{2,})$/.test(num) || !sig)) show(false, 'Not a valid certificate code', ['This QR code was not made by SJFACC.']);
+    else if (num) {
+      cres.innerHTML = '<p class="note">Checking\u2026</p>';
+      if (!window.crypto || !crypto.subtle) { show(false, 'Can\u2019t check on this browser', ['Please open this page in an up-to-date browser.']); }
+      else crypto.subtle.importKey('raw', b64u(cmain.getAttribute('data-coin-key')), { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify'])
+        .then(function (key) { return crypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, key, b64u(sig), new TextEncoder().encode('SJFACC Founders Coin|' + num)); })
+        .then(function (good) {
+          if (!good) return show(false, 'Not genuine', ['The signature on this certificate is not SJFACC\u2019s. The certificate is a copy or a fake.']);
+          return fetch(cmain.getAttribute('data-coin-api'), { method: 'POST', body: new URLSearchParams({ form: 'coin_lookup', number: num }) }).then(function (r) { return r.json(); }).then(function (r) {
+            if (!r.ok || !r.found) return show(false, 'Not in the registry', ['No. ' + num + ' has a valid signature but is not in SJFACC\u2019s coin registry. Please contact SJFACC.']);
+            if (!r.issued) return show(false, 'Not issued', ['No. ' + r.number + ': ' + r.message]);
+            show(true, 'Genuine SJFACC Commemorative Founders\u2019 Coin', ['No. ' + r.number + (r.hologram ? ' \u00b7 hologram ' + r.hologram : ''), 'Registered to ' + r.owner, 'Issued ' + (r.date ? r.date + ' ' : '') + 'at the Inaugural Club Night, South Jersey Filipino-American Chess Community, Inc.']);
+          });
+        }).catch(function () { show(false, 'Couldn\u2019t check right now', ['Please try again in a moment.']); });
+    }
+  }
+
   // Forms send to Formspree in the background and say thank you on the same page.
   // Until a real form ID replaces FORM_ID_PENDING, nothing is sent. Without this script, Formspree's own thank-you page is the fallback.
   var forms = document.querySelectorAll('form[data-formspree]');
