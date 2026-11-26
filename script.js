@@ -1570,17 +1570,13 @@
     fromHash();
   }
 
-  // Founders' Coin: Flip button turns the coin over (Alex, 2026-11-26, spec §107)
-  Array.prototype.forEach.call(document.querySelectorAll('[data-coin-flip]'), function (box) {
-    var cards = box.querySelectorAll('.coin-flip-card'), btn = box.querySelector('.coin-flip-btn');
-    var flip = function () {   // the coin and the lying-down photo turn over together
-      var back = box.classList.toggle('flipped');
-      Array.prototype.forEach.call(cards, function (c) {
-        c.setAttribute('aria-pressed', String(back));
-        c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/, (front|back)\. /, ', ' + (back ? 'back' : 'front') + '. '));
-      });
-    };
-    Array.prototype.forEach.call(cards, function (c) { c.addEventListener('click', flip); }); if (btn) btn.addEventListener('click', flip);
+  // Founders' Coin: click a picture to turn it over; each picture on its own (Alex, 2026-11-26, spec §107)
+  Array.prototype.forEach.call(document.querySelectorAll('.coin-flip-card'), function (c) {
+    c.addEventListener('click', function () {
+      var back = c.classList.toggle('flipped');
+      c.setAttribute('aria-pressed', String(back));
+      c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/, (front|back)\. /, ', ' + (back ? 'back' : 'front') + '. '));
+    });
   });
 
   // Forms send to Formspree in the background and say thank you on the same page.
