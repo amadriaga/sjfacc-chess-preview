@@ -1009,3 +1009,9 @@ main[data-approve-api] .officer-request, main[data-approve-api] .officer-secure 
 .promo-pass .promo-actions .btn-ghost:hover { background: rgba(15,27,45,.06); }
 .promo-pass .promo-pic--pass img { filter: drop-shadow(0 10px 16px rgba(15,27,45,.22)); }
 .promo-coin .note a { color: #fff; text-decoration: underline; }
+
+/* Tax notes and footnotes (spec §105, 2026-11-26) */
+.tax-note { margin-top: 12px; font-size: .85rem; }
+.tax-footnotes { margin-top: 32px; padding: 16px 20px; border-top: 1px solid var(--line); font-size: .85rem; color: var(--muted); max-width: 80ch; }
+.tax-footnotes p { margin: 0 0 8px; } .tax-footnotes ul { margin: 0 0 8px; padding-left: 1.2em; } .tax-footnotes li { margin: 4px 0; }
+.tax-footnotes b { color: var(--text); }
