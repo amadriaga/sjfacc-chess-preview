@@ -1094,3 +1094,22 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .prose-page { max-width: 760px; } .prose-page h2 { margin-top: 28px; } .prose-page ul { padding-left: 1.2em; } .prose-page li { margin: 6px 0; }
 .sitemap li { margin: 10px 0; }
 .store-line { display: inline-flex; align-items: center; gap: 5px; } .store-icon { width: 16px; height: 16px; object-fit: contain; }
+.founder-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.founder-card .founder-town { margin: 4px 0 0; }
+.founder-proud { margin: 4px 0 0; font-style: italic; color: var(--muted); font-size: .95rem; }
+.founder-emblem { flex: none; display: block; border-radius: 50%; transition: transform .2s; }
+.founder-emblem img { width: 80px; height: 80px; object-fit: contain; display: block; filter: drop-shadow(0 4px 6px rgba(15,27,45,.25)); }
+.founder-emblem:hover { transform: scale(1.05); } .founder-emblem:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+/* Partners board in the site's navy and gold (Alex, 2026-11-26: "doesn't blend well") */
+.dep { background: var(--ink); border: 1px solid #2a3b5a; box-shadow: var(--shadow, 0 10px 24px rgba(15,27,45,.18)); }
+.dep-head { background: linear-gradient(180deg,#14243d,var(--ink)); border-bottom: 2px solid var(--gold); font-family: var(--serif); font-size: 1.45rem; position: relative; }
+.dep-head::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg,#0038a8 0 33.3%,#ce1126 33.3% 66.6%,#fcd116 66.6%); }
+.dep-icon { color: var(--gold); }
+.dep-cols { color: #d4b06a; letter-spacing: .08em; text-transform: uppercase; font-size: .7rem; }
+.dep-row { border-top: 1px solid #22324d; }
+.dep-row > summary:hover { background: #16263f; }
+.flap i { color: #f1d796; background: linear-gradient(180deg,#1a2740 0 49%,#0a1222 49% 51%,#14203a 51%); box-shadow: inset 0 0 0 1px #070d18; }
+.dep-more { color: #d4b06a; }
+.dep-body { background: var(--ivory, #faf7ef); border-top: 2px solid var(--gold); }
+.protected { display: inline-block; margin-top: 4px; opacity: .8; }
+.ts-box { margin: 12px 0; min-height: 0; }

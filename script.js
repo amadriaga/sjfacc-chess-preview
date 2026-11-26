@@ -1376,7 +1376,7 @@
     ereq.addEventListener('submit', function (e) {
       e.preventDefault();
       var btn = ereq.querySelector('button'); btn.disabled = true; emsg2.textContent = 'Sending…'; emsg2.classList.add('ok');
-      fetch(eapi, { method: 'POST', body: new URLSearchParams({ form: 'edit_request', email: ereq.email.value, name: ereq.name.value, site: location.origin }) })
+      fetch(eapi, { method: 'POST', body: new URLSearchParams({ form: 'edit_request', email: ereq.email.value, name: ereq.name.value, site: location.origin, 'cf-turnstile-response': window.sjTsToken(ereq) }) })
         .then(function (r) { return r.json(); }).then(function (res) {
           emsg2.classList.toggle('ok', !!res.ok);
           emsg2.textContent = res.ok ? 'We\u2019ve sent a link to ' + (res.sent || ereq.email.value) + '. It works for 15 minutes (check your spam folder too).' : res.error;
@@ -1512,7 +1512,7 @@
     document.getElementById('v-send').addEventListener('click', function () {
       var em = vEmail.value.trim();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { note(vmsg, 'Please enter the email you registered with.'); return; }
-      post({ form: 'code', email: em, source: location.hostname }).then(function (res) {
+      post({ form: 'code', email: em, source: location.hostname, 'cf-turnstile-response': window.sjTsToken(document.getElementById('vote-form')) }).then(function (res) {
         if (res.ok) { document.getElementById('v-code-field').classList.remove('hidden'); note(vmsg, 'We emailed you a 6-digit code. It works for 15 minutes (check your spam folder too).', true); codeIn.focus(); }
         else note(vmsg, res.error || 'Something went wrong. Please try again.');
       }).catch(function () { note(vmsg, 'We couldn\u2019t send the code. Please try again.'); });
@@ -1578,6 +1578,24 @@
       c.setAttribute('aria-label', c.getAttribute('aria-label').replace(/, (front|back)\. /, ', ' + (back ? 'back' : 'front') + '. '));
     });
   });
+
+  // spec §110: Cloudflare Turnstile ("I'm human" check) on the public forms. Off until TURNSTILE_SITE_KEY is set
+  // (Cloudflare dashboard -> Turnstile -> add site sjfacc.org + staging.sjfacc.org); the sheet script checks the token.
+  var TURNSTILE_SITE_KEY = '';
+  window.sjTsToken = function (form) { var i = form && form.querySelector('[name="cf-turnstile-response"]'); return i ? i.value : ''; };
+  if (TURNSTILE_SITE_KEY) {
+    var tsForms = ['register-form', 'entry-form', 'request', 'edit-request', 'vote-form'].map(function (id) { return document.getElementById(id); }).filter(Boolean);
+    if (tsForms.length) {
+      window.sjTsReady = function () {
+        tsForms.forEach(function (f) {
+          var box = document.createElement('div'), btn = f.querySelector('button[type=submit], .btn-primary');
+          box.className = 'ts-box'; if (btn && btn.parentNode) btn.parentNode.insertBefore(box, btn); else f.appendChild(box);
+          window.turnstile.render(box, { sitekey: TURNSTILE_SITE_KEY, theme: 'light' });
+        });
+      };
+      var tsjs = document.createElement('script'); tsjs.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=sjTsReady&render=explicit'; tsjs.async = true; document.head.appendChild(tsjs);
+    }
+  }
 
   // spec §108: verify a Founders' Coin. The QR on the certificate opens /verify.html?c=<number>.<signature>.
   // The signature is checked here with SJFACC's public key (ECDSA P-256); the registry (owner, status) comes from the sheet script.
