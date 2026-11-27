@@ -1011,11 +1011,13 @@
         Array.prototype.forEach.call(document.querySelectorAll('#admin .subtab'), function (x) { x.setAttribute('aria-selected', String(x === b)); });
         Array.prototype.forEach.call(document.querySelectorAll('#admin .admin-sub'), function (sec) { sec.hidden = sec.id !== b.getAttribute('data-sub'); });
         if (b.getAttribute('data-sub') === 'admin-downloads') loadReview();
+        if (b.getAttribute('data-sub') === 'admin-letters') loadLetters();
       });
     });
     // spec §106: Admin -> Downloads: review every pushed PDF (View, Download, Approve, Deny, Revise)
     var rvList = document.getElementById('review-list'), rvMsg = document.getElementById('review-msg');
-    var rvOpen = function (d, btn, download) {
+    var rvOpen = function (d, btn, download, msgEl) {
+      var rvMsg = msgEl || document.getElementById('review-msg');
       btn.disabled = true; say(rvMsg, 'Opening ' + d.title + '\u2026', true);
       post({ form: 'admin_review_doc', token: tok(), id: d.id }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
@@ -1036,7 +1038,7 @@
         if (!res.ok) { say(rvMsg, res.error); return; }
         if (!res.docs.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
         RV_GROUPS.forEach(function (g) {
-          var docs = res.docs.filter(function (d) { return d.target === g[0]; }); if (!docs.length) return;
+          var docs = res.docs.filter(function (d) { return d.kind !== 'letter' && d.target === g[0]; }); if (!docs.length) return;
           var gbox = rvDetails('g:' + g[0], 'review-groupbox'), gh = document.createElement('summary'); gh.className = 'review-group'; gh.textContent = g[1] + ' (' + docs.length + ')'; gbox.appendChild(gh); rvList.appendChild(gbox);
           docs.forEach(function (d) {
             var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
@@ -1067,6 +1069,53 @@
           });
         });
       }).catch(function () { say(rvMsg, 'Couldn\u2019t load the documents. Please try again.'); });
+    };
+    // spec §111: Admin -> Letters
+    var ltList = document.getElementById('letter-list'), ltMsg = document.getElementById('letter-msg');
+    var copyLetter = function (d, html) {
+      var subject = 'Subject: ' + (d.subject || d.title), plain = subject + '\n\n' + (d.text || '');
+      if (html && d.emailHtml && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
+        return navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([d.emailHtml], { type: 'text/html' }), 'text/plain': new Blob([plain], { type: 'text/plain' }) })])
+          .then(function () { say(ltMsg, 'Copied the email (formatted and plain text). Paste it into the message; the subject is: ' + (d.subject || d.title), true); });
+      }
+      return (navigator.clipboard ? navigator.clipboard.writeText(plain) : Promise.reject()).then(function () { say(ltMsg, 'Copied the plain text (subject first).', true); })
+        .catch(function () { say(ltMsg, 'Couldn\u2019t copy automatically. Use Download instead.'); });
+    };
+    var loadLetters = function () {
+      if (!ltList) return;
+      post({ form: 'admin_review_list', token: tok() }).then(function (res) {
+        if (res.signedOut) return signOut(res.error);
+        ltList.innerHTML = '';
+        if (!res.ok) { say(ltMsg, res.error); return; }
+        var letters = res.docs.filter(function (d) { return d.kind === 'letter'; });
+        if (!letters.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'No letters yet.'; ltList.appendChild(n0); return; }
+        letters.forEach(function (d) {
+          var card = rvDetails('l:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
+          var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = d.subject || d.title; sm.appendChild(h);
+          var st = { Approve: ['\u2713 Approved to send', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
+          var badge = document.createElement('span'); badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge); card.appendChild(sm);
+          var mt = document.createElement('p'); mt.className = 'trustee-meta'; mt.textContent = 'To: ' + (d.to || '\u2014') + ' \u00b7 dated ' + d.version + ' \u00b7 pushed ' + d.pushed; card.appendChild(mt);
+          if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': \u201c' + d.note + '\u201d' : ''); card.appendChild(dn); }
+          var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + (d.subject || d.title));
+          var acts = document.createElement('div'); acts.className = 'officer-actions';
+          [['View', 'btn-outline'], ['Download', 'btn-outline'], ['Copy email', 'btn-outline'], ['Copy text', 'btn-outline'], ['Approve', 'btn-primary'], ['Deny', 'btn-outline'], ['Revise', 'btn-outline']].forEach(function (b) {
+            var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn btn-sm ' + b[1]; bt.textContent = b[0];
+            bt.addEventListener('click', function () {
+              if (b[0] === 'View' || b[0] === 'Download') return rvOpen(d, bt, b[0] === 'Download', ltMsg);
+              if (b[0] === 'Copy email' || b[0] === 'Copy text') return copyLetter(d, b[0] === 'Copy email');
+              if (b[0] !== 'Approve' && !note.value.trim()) { note.focus(); return say(ltMsg, 'Please add a note saying why or what to change.'); }
+              bt.disabled = true; say(ltMsg, 'Saving\u2026', true);
+              post({ form: 'admin_review_decide', token: tok(), id: d.id, decision: b[0], note: note.value }).then(function (r) {
+                if (r.signedOut) return signOut(r.error);
+                if (!r.ok) return say(ltMsg, r.error);
+                say(ltMsg, (d.subject || d.title) + ': ' + r.message, true); loadLetters();
+              }).catch(function () { say(ltMsg, 'Couldn\u2019t save. Please try again.'); }).then(function () { bt.disabled = false; });
+            });
+            acts.appendChild(bt);
+          });
+          card.appendChild(note); card.appendChild(acts); ltList.appendChild(card);
+        });
+      }).catch(function () { say(ltMsg, 'Couldn\u2019t load the letters. Please try again.'); });
     };
     // spec §83: trustee emails: View email (exactly as sent) and Send email (typed SEND confirmation)
     var tdList = document.getElementById('tdoc-list'), tdMsg = document.getElementById('tdoc-msg');
@@ -1684,3 +1733,28 @@
   }).catch(function () { msg.textContent = 'Couldn\u2019t load the members. Please try again.'; });
 })();
 
+
+/* Partners board: letters flip through a few characters before settling, like a mechanical split-flap board (support page) */
+(function () {
+  var board = document.querySelector('.dep');
+  if (!board || !('IntersectionObserver' in window)) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var CH = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  var run = function () {
+    var tiles = board.querySelectorAll('.flap i');
+    Array.prototype.forEach.call(tiles, function (t, n) {
+      var final = t.textContent;
+      if (final === ' ' || final === ' ') return;
+      var steps = 4 + Math.floor(Math.random() * 6), k = 0;
+      setTimeout(function tick() {
+        t.classList.remove('flip'); void t.offsetWidth; t.classList.add('flip');
+        t.textContent = k < steps ? CH.charAt(Math.floor(Math.random() * CH.length)) : final;
+        if (k++ < steps) setTimeout(tick, 70);
+      }, (n % 12) * 35);
+    });
+  };
+  var io = new IntersectionObserver(function (es) {
+    if (es.some(function (e) { return e.isIntersecting; })) { io.disconnect(); run(); }
+  }, { threshold: 0.4 });
+  io.observe(board);
+})();
