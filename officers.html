@@ -18,7 +18,7 @@
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta name="twitter:card" content="summary_large_image">
-  <link rel="stylesheet" href="/styles.css?v=58d77889c7">
+  <link rel="stylesheet" href="/styles.css?v=af60cb9e58">
 </head>
 <body>
   <div style="background:#b8913a;color:#0f1b2d;font:600 13px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;text-align:center;padding:7px 16px">Welcome to the Official SJFACC interim website &mdash; fully operational &middot; <a href="/register.html" style="color:#0f1b2d;text-decoration:underline">Registration is now open! &rarr;</a></div>
@@ -98,91 +98,112 @@
           <div class="officer-panel hidden" id="officer-panel">
             <div class="officer-head"><p>Signed in as <b id="officer-name"></b>. Every approval, decision and comment is recorded electronically with your name and the date and time.</p><button class="btn btn-outline btn-sm" type="button" id="officer-out">Sign out</button></div>
             <div class="tabs" role="tablist" aria-label="Officer tools">
-              <button class="tab" role="tab" id="tab-registrations" aria-controls="registrations" aria-selected="true">Registrations</button>
-              <button class="tab" role="tab" id="tab-documents" aria-controls="documents" aria-selected="false">Approvals</button>
-              <button class="tab" role="tab" id="tab-contest" aria-controls="contest" aria-selected="false">T-shirt contest</button>
-              <button class="tab" role="tab" id="tab-officers" aria-controls="officers" aria-selected="false">Officers</button>
-              <button class="tab" role="tab" id="tab-trustees" aria-controls="trustees" aria-selected="false" hidden>Board</button>
-              <button class="tab" role="tab" id="tab-legal" aria-controls="legal" aria-selected="false" hidden>Legal Requirements</button>
-              <button class="tab" role="tab" id="tab-treasurer" aria-controls="treasurer" aria-selected="false" hidden>Treasurer</button>
+              <button class="tab" role="tab" id="tab-membership" aria-controls="membership" aria-selected="true">Membership</button>
+              <button class="tab" role="tab" id="tab-events" aria-controls="events" aria-selected="false">Events</button>
+              <button class="tab" role="tab" id="tab-officers" aria-controls="officers" aria-selected="false">Club Officers</button>
+              <button class="tab" role="tab" id="tab-help" aria-controls="help" aria-selected="false">Help</button>
+              <button class="tab" role="tab" id="tab-board" aria-controls="board" aria-selected="false" hidden>Board of Trustees</button>
               <button class="tab" role="tab" id="tab-admin" aria-controls="admin" aria-selected="false" hidden>Admin</button>
             </div>
-            <div class="tab-panel" id="registrations" role="tabpanel" aria-labelledby="tab-registrations">
-            <p class="nt-launch"><a class="btn btn-outline btn-sm" href="/name-tags.html">Print name tags</a> <span class="by">Approved members, for Avery 5395 badge labels or plain paper</span></p>
-            <div class="reg-list" id="officer-body"></div>
+            <div class="tab-panel" id="membership" role="tabpanel" aria-labelledby="tab-membership">
+              <div class="subtabs" role="tablist" aria-label="Membership sections"><button class="subtab" type="button" role="tab" data-sub="sub-registrations" aria-selected="true">Registrations</button><button class="subtab" type="button" role="tab" data-sub="sub-nametags" aria-selected="false">Print name tags</button></div>
+              <div class="sub-panel" id="sub-registrations">
+              <div class="reg-list" id="officer-body"></div>
             <p class="officer-msg" id="officer-msg" role="status"></p>
+              </div>
+              <div class="sub-panel" id="sub-nametags" hidden>
+                <div class="entries-review">
+                  <h3>Print name tags</h3>
+                  <p class="note" style="margin:0 0 10px">Name tags for approved members, for Avery 5395 badge labels or plain paper.</p>
+                  <p><a class="btn btn-primary btn-sm" href="/name-tags.html">Open the name tags</a></p>
+                </div>
+              </div>
             </div>
-            <div class="tab-panel" id="documents" role="tabpanel" aria-labelledby="tab-documents" hidden>
-            <div class="entries-review docs-review" id="documents-box">
-              <h3>Approvals</h3>
-              <p class="note" style="margin:0 0 10px">Officer decisions (designs, events, website: SJFACC-OD-xxx) and presentations. Board decisions, minutes and formation documents are on the Board tab. Open or download a document, and leave comments for the next revision: every signed-in officer sees them, with your name and the date and time.</p>
-              <div class="doc-list" id="doc-list"><p class="note">Loading&hellip;</p></div>
-              <p class="officer-msg" id="doc-msg" role="status"></p>
-            </div>
-            </div>
-            <div class="tab-panel" id="contest" role="tabpanel" aria-labelledby="tab-contest" hidden>
-            <div class="entries-review" id="entries-review">
-              <h3>2028 shirt contest entries</h3>
-              <p class="note" style="margin:0 0 10px">Open each design, then approve it (it appears in the public gallery straight away) or reject it (never shown). You can change a decision later.</p>
-              <div class="entry-list" id="entry-list"><p class="note">Loading&hellip;</p></div>
+            <div class="tab-panel" id="events" role="tabpanel" aria-labelledby="tab-events" hidden>
+              <div class="subtabs" role="tablist" aria-label="Events"><button class="subtab" type="button" role="tab" data-sub="sub-inaugural" aria-selected="true">Inaugural Night</button></div>
+              <div class="sub-panel" id="sub-inaugural">
+                <div class="entries-review docs-review" id="documents-box">
+                  <h3>Inaugural Night</h3>
+                  <p class="note" style="margin:0 0 10px">The documents for opening night. Open or download each one, and leave comments for the next revision: every signed-in officer sees them, with your name and the date and time.</p>
+                  <div class="doc-list" id="doc-list"><p class="note">Loading&hellip;</p></div>
+                  <p class="officer-msg" id="doc-msg" role="status"></p>
+                </div>
+                <div class="entries-review" id="entries-review">
+                  <h3>T-shirt contest: 2028 shirt entries</h3>
+                  <p class="note" style="margin:0 0 10px">Open each design, then approve it (it appears in the public gallery straight away) or reject it (never shown). You can change a decision later.</p>
+                  <div class="entry-list" id="entry-list"><p class="note">Loading&hellip;</p></div>
               <p class="officer-msg" id="entry-msg" role="status"></p>
+                </div>
+              </div>
             </div>
+            <div class="tab-panel" id="help" role="tabpanel" aria-labelledby="tab-help" hidden>
+              <div class="entries-review docs-review">
+                <h3>Help</h3>
+                <div class="doc-list" id="help-list"><p class="note">Loading&hellip;</p></div>
+              </div>
             </div>
-            <div class="tab-panel" id="trustees" role="tabpanel" aria-labelledby="tab-trustees" hidden>
-              <p class="note" style="margin:0 0 12px">For SJFACC trustees only: formation documents, minutes and board decisions (SJFACC-BD-xxx). Read each document, choose Approve, Deny or Revise for every decision, then sign by typing your full legal name. Your signature, the date and time are saved with a PDF record.</p>
-              <p class="form-msg" id="trustee-msg" role="status"></p>
+            <div class="tab-panel" id="board" role="tabpanel" aria-labelledby="tab-board" hidden>
+              <div class="subtabs" role="tablist" aria-label="Board of Trustees sections"><button class="subtab" type="button" role="tab" data-sub="sub-boarddocs" id="tab-trustees" aria-selected="true" hidden>Board documents</button><button class="subtab" type="button" role="tab" data-sub="sub-legal" id="tab-legal" aria-selected="false" hidden>Legal requirements</button><button class="subtab" type="button" role="tab" data-sub="sub-pricing" id="tab-pricing" aria-selected="false" hidden>Tax and pricing model</button><button class="subtab" type="button" role="tab" data-sub="sub-treasury" id="tab-treasurer" aria-selected="false" hidden>Treasury</button></div>
+              <div class="sub-panel" id="sub-boarddocs">
+                <p class="note" style="margin:0 0 12px">For SJFACC trustees only: formation documents, minutes and board decisions (SJFACC-BD-xxx). Read each document, choose Approve, Deny or Revise for every decision, then sign by typing your full legal name. Your signature, the date and time are saved with a PDF record.</p>
+                <p class="form-msg" id="trustee-msg" role="status"></p>
               <div id="trustee-list"><p class="note">Loading&hellip;</p></div>
-            </div>
-            <div class="tab-panel" id="legal" role="tabpanel" aria-labelledby="tab-legal" hidden>
-              <p class="note" style="margin:0 0 12px">For SJFACC trustees. Every step of forming the nonprofit, start to finish, from the Formation Document (SJFACC-TD-001). Tick a step when it is completed: your name and the date and time are saved, and every change is kept.</p>
-              <p class="lr-progress" id="legal-progress"></p>
+              </div>
+              <div class="sub-panel" id="sub-legal" hidden>
+                <p class="note" style="margin:0 0 12px">For SJFACC trustees. Every step of forming the nonprofit, start to finish, from the Formation Document (SJFACC-TD-001). Each row shows the document it comes from. Tick a step when it is completed: your name and the date and time are saved, and every change is kept.</p>
+                <p class="lr-progress" id="legal-progress"></p>
               <p class="form-msg" id="legal-msg" role="status"></p>
               <div id="legal-list"><p class="note">Loading&hellip;</p></div>
-            </div>
-            <div class="tab-panel" id="treasurer" role="tabpanel" aria-labelledby="tab-treasurer" hidden>
-              <div class="entries-review">
-                <h3>Startup-cost invoices</h3>
-                <p class="note" style="margin:0 0 10px">For the Treasurer and the owners. The startup costs are split between the two founders, Alexander Madriaga and Andrew Suganob (Formation Document, decision 11); Andrew pays his share by Zelle to azmadriaga@gmail.com. <b>Sign</b> issues the invoice with your electronic signature (Danica Tuason signs; Alexander Madriaga signs Danica&rsquo;s). <b>Mark paid</b> when the Zelle payment arrives: the PDF then shows PAID and works as the receipt. Startup fees are entered in the sign-up sheet&rsquo;s &ldquo;Startup fees&rdquo; tab.</p>
+              </div>
+              <div class="sub-panel" id="sub-pricing" hidden>
+                <p class="note" style="margin:0 0 12px">Dues, prices, costs and the tax notes shown on the website. Review and sign each document like the Board documents.</p>
+                <div id="pricing-list"><p class="note">Loading&hellip;</p></div>
+              </div>
+              <div class="sub-panel" id="sub-treasury" hidden>
+                <div class="subtabs" role="tablist" aria-label="Treasury"><button class="subtab" type="button" role="tab" data-sub="sub-invoices" aria-selected="true">Invoices</button></div>
+                <div class="sub-panel entries-review" id="sub-invoices">
+                  <h3>Startup-cost invoices</h3>
+                  <p class="note" style="margin:0 0 10px">For the Treasurer and the owners. The startup costs are split between the two founders, Alexander Madriaga and Andrew Suganob (Formation Document, decision 11); Andrew pays his share by Zelle to azmadriaga@gmail.com. <b>Sign</b> issues the invoice with your electronic signature (Danica Tuason signs; Alexander Madriaga signs Danica&rsquo;s). <b>Mark paid</b> when the Zelle payment arrives: the PDF then shows PAID and works as the receipt. Startup fees are entered in the sign-up sheet&rsquo;s &ldquo;Startup fees&rdquo; tab.</p>
                 <p class="officer-msg" id="inv-msg" role="status"></p>
                 <div id="inv-list"><p class="note">Loading&hellip;</p></div>
+                </div>
               </div>
             </div>
             <div class="tab-panel" id="admin" role="tabpanel" aria-labelledby="tab-admin" hidden>
-              <div class="subtabs" role="tablist" aria-label="Admin sections">
-                <button class="subtab" type="button" role="tab" data-sub="admin-people" aria-selected="true">Officers and trustees</button>
-                <button class="subtab" type="button" role="tab" data-sub="admin-tdocs" aria-selected="false">Trustee docs</button>
-                <button class="subtab" type="button" role="tab" data-sub="admin-signins" aria-selected="false">Recent sign-ins</button>
-                <button class="subtab" type="button" role="tab" data-sub="admin-downloads" aria-selected="false">Downloads</button>
-                <button class="subtab" type="button" role="tab" data-sub="admin-letters" aria-selected="false">Letters</button>
-              </div>
-              <div class="entries-review admin-sub" id="admin-people">
-                <h3>SJFACC interim officers and trustees</h3>
+              <div class="subtabs" role="tablist" aria-label="Admin sections"><button class="subtab" type="button" role="tab" data-sub="admin-people" aria-selected="true">Management</button><button class="subtab" type="button" role="tab" data-sub="admin-signins" aria-selected="false">Recent sign-ins</button><button class="subtab" type="button" role="tab" data-sub="admin-downloads" aria-selected="false">Downloads</button></div>
+              <div class="entries-review sub-panel" id="admin-people">
+                <h3>Management: officers and trustees</h3>
                 <p class="note" style="margin:0 0 10px">Seen only by the System Administrator and Alex Madriaga. If someone can&rsquo;t get in through Request access, type their email here and send the invitation yourself (email from the SJFACC admin account, link valid 48 hours). Names come from the club&rsquo;s interim officer list; correct them in the sign-up sheet&rsquo;s &ldquo;SJFACC roster&rdquo; tab.</p>
                 <div class="admin-list" id="admin-list"><p class="note">Loading&hellip;</p></div>
                 <p class="officer-msg" id="admin-msg" role="status"></p>
+                <form class="invite-form hidden" id="invite-form" autocomplete="off">
+              <h3>Invite an officer</h3>
+              <p class="note" style="margin:0 0 10px">They get an email from the SJFACC admin account with a link (valid 48 hours) to set up Google Authenticator; then they can sign in here (with the role you choose).</p>
+              <div class="officer-fields">
+                <label>Full name<input type="text" name="name" required></label>
+                <label>Email<input type="email" name="email" required></label>
+                <button class="btn btn-outline" type="submit">Send invitation</button>
               </div>
-              <div class="entries-review admin-sub" id="admin-tdocs" hidden>
-                <h3>Trustee docs: emails to the trustees</h3>
-                <p class="note" style="margin:0 0 10px">Each trustee document has an email that tells the trustees how to review and sign it. <b>View email</b> shows it exactly as it will be sent; <b>Send email</b> sends it from the SJFACC admin account after you confirm.</p>
-                <div id="tdoc-list"><p class="note">Loading&hellip;</p></div>
-                <p class="officer-msg" id="tdoc-msg" role="status"></p>
+              <div class="role-slot"><span class="by">What they can see and do:</span></div>
+              <p class="officer-msg" id="invite-msg" role="status"></p>
+            </form>
+                <div class="entries-review hidden" id="request-review">
+              <h3>Officer access requests</h3>
+              <p class="note" style="margin:0 0 10px">People who asked to become officers. <b>Send invitation</b> emails them the set-up link; nothing is granted until they set up Google Authenticator.</p>
+              <div class="doc-list" id="request-list"></div>
+              <p class="officer-msg" id="request-msg" role="status"></p>
+            </div>
               </div>
-              <div class="entries-review admin-sub" id="admin-downloads" hidden>
+              <div class="entries-review sub-panel" id="admin-signins" hidden>
+                <h3>Recent sign-ins</h3>
+                <p class="note" style="margin:0 0 10px">The latest 25 officer sign-ins. &ldquo;New device&rdquo; means a phone or computer that officer hadn&rsquo;t used before (they also get an email). Two different devices on one account in a short time can mean a shared QR code: use <b>New authenticator</b> on the Officers tab.</p>
+                <div class="roster-wrap"><table class="roster-table officer-table"><thead><tr><th scope="col">When</th><th scope="col">Officer</th><th scope="col">Device</th></tr></thead><tbody id="signin-list"><tr><td colspan="3">Loading&hellip;</td></tr></tbody></table></div>
+              </div>
+              <div class="entries-review sub-panel" id="admin-downloads" hidden>
                 <h3>Downloads: review every PDF</h3>
                 <p class="note" style="margin:0 0 10px">The latest build of every SJFACC document, waiting for your review. <b>View</b> or <b>Download</b> it, then <b>Approve</b>, <b>Deny</b> or <b>Revise</b> (Deny and Revise need a note). Approving a Board or Approvals document publishes it there for the trustees or officers: it replaces the live file in place, so links, comments and signatures stay. Download-only files (flyers, forms, print files) are just marked approved.</p>
                 <div id="review-list"><p class="note">Loading&hellip;</p></div>
                 <p class="officer-msg" id="review-msg" role="status"></p>
-              </div>
-              <div class="entries-review admin-sub" id="admin-letters" hidden>
-                <h3>Letters</h3>
-                <p class="note" style="margin:0 0 10px">Every outgoing SJFACC letter, on letterhead. <b>View</b> or <b>Download</b> the PDF, <b>Copy email</b> (formatted, with the letterhead, for Gmail or Outlook; plain text is included for mail programs that need it) or <b>Copy text</b> (plain text only), then <b>Approve</b> it to send, or <b>Deny</b> / <b>Revise</b> with a note. To reuse a letter, ask Claude to copy it for a new recipient.</p>
-                <div id="letter-list"><p class="note">Loading&hellip;</p></div>
-                <p class="officer-msg" id="letter-msg" role="status"></p>
-              </div>
-              <div class="entries-review admin-sub" id="admin-signins" hidden>
-                <h3>Recent sign-ins</h3>
-                <p class="note" style="margin:0 0 10px">The latest 25 officer sign-ins. &ldquo;New device&rdquo; means a phone or computer that officer hadn&rsquo;t used before (they also get an email). Two different devices on one account in a short time can mean a shared QR code: use <b>New authenticator</b> on the Officers tab.</p>
-                <div class="roster-wrap"><table class="roster-table officer-table"><thead><tr><th scope="col">When</th><th scope="col">Officer</th><th scope="col">Device</th></tr></thead><tbody id="signin-list"><tr><td colspan="3">Loading&hellip;</td></tr></tbody></table></div>
               </div>
             </div>
             <div class="tab-panel" id="officers" role="tabpanel" aria-labelledby="tab-officers" hidden>
@@ -203,23 +224,8 @@
                 <h3>Current officers</h3>
                 <div class="reg-list" id="officer-list"><p class="note">Loading&hellip;</p></div>
               </div>
-            <form class="invite-form hidden" id="invite-form" autocomplete="off">
-              <h3>Invite an officer</h3>
-              <p class="note" style="margin:0 0 10px">They get an email from the SJFACC admin account with a link (valid 48 hours) to set up Google Authenticator; then they can sign in here (with the role you choose).</p>
-              <div class="officer-fields">
-                <label>Full name<input type="text" name="name" required></label>
-                <label>Email<input type="email" name="email" required></label>
-                <button class="btn btn-outline" type="submit">Send invitation</button>
-              </div>
-              <div class="role-slot"><span class="by">What they can see and do:</span></div>
-              <p class="officer-msg" id="invite-msg" role="status"></p>
-            </form>
-            <div class="entries-review hidden" id="request-review">
-              <h3>Officer access requests</h3>
-              <p class="note" style="margin:0 0 10px">People who asked to become officers. <b>Send invitation</b> emails them the set-up link; nothing is granted until they set up Google Authenticator.</p>
-              <div class="doc-list" id="request-list"></div>
-              <p class="officer-msg" id="request-msg" role="status"></p>
-            </div>
+            
+            
               <p class="note" id="officers-none">Need to add an officer? Ask them to use <a href="#request">Request access</a> on this page (or scan the officer QR code). The SJFACC admin account reviews every request and sends the invitation.</p>
               </div>
             </details>
@@ -264,10 +270,10 @@
       </div>
       <div class="footer-bottom">
         <span>&copy; <span data-year>2026</span> South Jersey Filipino-American Chess Community, Inc. · All rights reserved<br><small class="protected">This site is protected by Cloudflare.</small></span>
-        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 325 · Nov 27, 2026</span></span>
+        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 326 · Nov 27, 2026</span></span>
       </div>
     </div>
   </footer>
-  <script src="/script.js?v=5721c66236"></script>
+  <script src="/script.js?v=63c6396ecf"></script>
 </body>
 </html>

@@ -272,6 +272,7 @@
       }).catch(function () { say(msg, 'Couldn\u2019t load the invoices.'); });
     };
     // spec §93: Legal Requirements tab: the formation steps, start to finish, ticked when completed (who and when saved)
+    var LEGAL_DOCNO = { attachment: 'SJFACC-TD-002', meeting: 'SJFACC-BD-003', startup: 'SJFACC-TD-001' };   // the document each step comes from; default the Formation Document
     var loadLegal = function () {
       var lt = document.getElementById('tab-legal'), ll = document.getElementById('legal-list'), lm = document.getElementById('legal-msg'), lp = document.getElementById('legal-progress');
       if (!lt || !ll) return;
@@ -287,7 +288,7 @@
             phase = q.phase;
             var mine = res.items.filter(function (x) { return x.phase === phase; }), nd = mine.filter(function (x) { return x.done; }).length;
             var g = document.createElement('details'); g.className = 'lr-group'; g.dataset.phase = phase;
-            g.open = (phase in was) ? was[phase] : nd < mine.length;
+            g.open = (phase in was) ? was[phase] : false;   // collapsed by default (spec §113)
             var sm = document.createElement('summary'); sm.className = 'lr-phase';
             var nm = document.createElement('span'); nm.textContent = phase; sm.appendChild(nm);
             var ct = document.createElement('span'); ct.className = 'badge lr-badge' + (nd === mine.length ? ' lr-badge--done' : ''); ct.textContent = (nd === mine.length ? '✓ ' : '') + nd + ' of ' + mine.length; sm.appendChild(ct);
@@ -296,7 +297,8 @@
           var card = document.createElement('div'); card.className = 'doc-card-o lr-card' + (q.done ? ' lr-card--done' : '');
           var top = document.createElement('div'); top.className = 'lr-top';
           var b = document.createElement('span'); b.className = 'badge lr-badge' + (q.done ? ' lr-badge--done' : ''); b.textContent = q.done ? '✓ Completed' : 'Open'; top.appendChild(b);
-          var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t); card.appendChild(top);
+          var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t);
+          var dn = document.createElement('span'); dn.className = 'lr-docno'; dn.textContent = q.docno || LEGAL_DOCNO[q.id] || 'SJFACC-TD-001'; top.appendChild(dn); card.appendChild(top);   // document control number (spec §113)
           var d = document.createElement('p'); d.className = 'trustee-meta'; d.textContent = q.detail + (q.due ? ' Due: ' + q.due + '.' : ''); card.appendChild(d);
           if (q.by || q.at) { var w = document.createElement('p'); w.className = 'by'; w.textContent = (q.done ? 'Completed' : 'Marked not completed') + ' by ' + (q.by || '—') + (q.at ? ' on ' + q.at : '') + (q.note ? ' · ' + q.note : ''); card.appendChild(w); }
           var save = function (done, ctl) {   // completed steps are locked; only owners can reopen (spec §93)
@@ -323,13 +325,19 @@
     // spec §80: trustee approvals with a typed electronic signature (tab shown only to trustees and owners)
     var loadTrustees = function () {
       var tlist = document.getElementById('trustee-list'), tmsg = document.getElementById('trustee-msg'), ttab = document.getElementById('tab-trustees');
+      var plist = document.getElementById('pricing-list'), ptab = document.getElementById('tab-pricing');   // spec §113: BD-004/005/006 (and BD-007 once published) -> Tax and pricing model
+      var PRICING = { '1lFls0EBinWg1gJyHP8CMWoRfoUGz4a5u': 1, '1Oyp4abvcW2VgqHiveJ6T56WkdNEwVaL0': 1, '1__nkvrhpszLPqWAi6zK4plnwgkxOEO4U': 1 };
+      var isPricing = function (d) { return PRICING[d.id] || /BD-007/.test(d.docno || ''); };
       if (!tlist || !ttab) return;
       post({ form: 'officer_trustee_docs', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
-        if (!res.ok) { ttab.hidden = true; return; }
-        var wasOpen = {}; Array.prototype.forEach.call(tlist.querySelectorAll('details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
-        ttab.hidden = false; tlist.innerHTML = '';
-        if (!res.docs.length) { var none = document.createElement('p'); none.className = 'note'; none.textContent = 'No trustee documents yet.'; tlist.appendChild(none); return; }
+        if (!res.ok) { ttab.hidden = true; if (ptab) ptab.hidden = true; return; }
+        var wasOpen = {}; Array.prototype.forEach.call(document.querySelectorAll('#trustee-list details.td-group, #pricing-list details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
+        ttab.hidden = false; tlist.innerHTML = ''; if (ptab) ptab.hidden = false; if (plist) plist.innerHTML = '';
+        [[tlist, false, 'No trustee documents yet.'], [plist, true, 'No tax and pricing documents yet.']].forEach(function (x) {
+          if (x[0] && !res.docs.some(function (d) { return !!isPricing(d) === x[1]; })) { var none = document.createElement('p'); none.className = 'note'; none.textContent = x[2]; x[0].appendChild(none); }
+        });
+        if (!res.docs.length) return;
         res.docs.forEach(function (d) {
           var tg = document.createElement('details'); tg.className = 'td-group'; tg.dataset.id = d.id;   // collapsible document (spec §98)
           var nSigned = d.trustees.filter(function (t) { return t.signed; }).length, mineSigned = !!(d.mine && d.mine.signed);
@@ -439,7 +447,7 @@
             });
             card.appendChild(form);
           }
-          tlist.appendChild(tg);
+          ((isPricing(d) && plist) ? plist : tlist).appendChild(tg);
         });
       }).catch(function () { ttab.hidden = true; });
     };
@@ -452,14 +460,16 @@
         var onone = document.getElementById('officers-none'); if (onone) onone.classList.toggle('hidden', !!res.canInvite);
         if (reqForm) reqForm.classList.add('hidden');
         var has = function (a) { return (res.roles || []).indexOf(a) !== -1; };   // spec §52: tabs by area
-        ['registrations', 'contest', 'documents', 'officers'].forEach(function (id) { var tb = document.getElementById('tab-' + id); if (tb) tb.hidden = !has(id); });
+        var showEl = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };   // officers-page tabs (spec §113)
+        showEl('tab-membership', has('registrations')); showEl('tab-events', has('documents') || has('contest')); showEl('tab-help', has('documents')); showEl('tab-officers', has('officers'));
+        showEl('documents-box', has('documents')); showEl('entries-review', has('contest'));
         var tAdmin = document.getElementById('tab-admin'); if (tAdmin) tAdmin.hidden = !res.owner;   // spec §55: owners only
         var cur = document.querySelector('#officer-panel .tab[aria-selected="true"]');
         if (!cur || cur.hidden) { var first = document.querySelector('#officer-panel .tab:not([hidden])'); if (first) first.click(); }
         if (has('contest')) loadEntries();
         if (has('documents')) loadDocs();
         if (has('officers')) { loadRequests(); loadOfficers(); }
-        if (res.owner) { loadAdmin(); loadSignIns(); loadTrusteeEmails(); }
+        if (res.owner) { loadAdmin(); loadSignIns(); }
         loadTrustees();   // spec §80
         loadLegal();   // spec §93
         loadTreasurer();  // spec §84
@@ -717,6 +727,8 @@
       }).catch(function () { elist.textContent = 'Couldn’t load the entries.'; });
     };
     // spec §52 phase 1: Board documents (view, download, comments) and officer access requests
+    var hlist = document.getElementById('help-list');   // spec §113: "How the SJFACC website works" goes to Help; the rest to Events -> Inaugural Night, in this order
+    var HELP_DOCS = { '1H-aCHv_vvj9DgGKThlCR2NVVT7ayvj1w': 1 }, EVENT_ORDER = ['170XFYSlfwgl4G1uUsIdIr2wimo-YOXG-', '1EVucNcWRywuGpZFtaCeIWhuul92knxbc', '14iyQrVBchcDzs5wNLdFcPa88QG8H6xNh', '1uk1WKIiMu_2tk6CkGThLm68MHvR-mzMT', '13tyPvLl7GQ_Cmgw4EXgZHfyZIIz_a8O9'];
     var dlist = document.getElementById('doc-list'), dmsg = document.getElementById('doc-msg'), openDocs = {};   // spec §54: which document cards are open (kept across auto-refresh)
     var b64Blob = function (data, mime) { var bin = atob(data), bytes = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new Blob([bytes], { type: mime }); };
     var docOpen = function (d, btn, download) {
@@ -734,8 +746,12 @@
       post({ form: 'officer_docs', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
         if (!res.ok) { dlist.innerHTML = ''; return say(dmsg, res.error); }
-        dlist.innerHTML = '';
-        if (!res.docs.length) { var none = document.createElement('p'); none.className = 'note'; none.textContent = 'No documents yet.'; dlist.appendChild(none); return; }
+        dlist.innerHTML = ''; if (hlist) hlist.innerHTML = '';
+        var rank = function (d) { var i = EVENT_ORDER.indexOf(d.id); return i < 0 ? 99 : i; };
+        res.docs = res.docs.slice().sort(function (x, y) { return rank(x) - rank(y); });
+        var none0 = function (box, t) { if (box && !box.children.length) { var p = document.createElement('p'); p.className = 'note'; p.textContent = t; box.appendChild(p); } };
+        setTimeout(function () { none0(dlist, 'No documents yet.'); none0(hlist, 'No help documents yet.'); }, 0);
+        if (!res.docs.length) return;
         var board = res.board || 0, maj = res.majority || 1, canVote = res.canVote !== false;
         var KINDS = ['Approved', 'Not approved', 'Revise'], RCLS = { 'Approved': 'r-approved', 'Not approved': 'r-not', 'Revise': 'r-revise', 'Open': 'r-open' };
         var resultOf = function (t) { for (var i = 0; i < KINDS.length; i++) if (board && t[KINDS[i]] >= maj) return KINDS[i]; return 'Open'; };
@@ -853,7 +869,7 @@
           head.removeChild(nm); if (!head.childNodes.length) card.removeChild(head);
           acc.appendChild(card);
           acc.addEventListener('toggle', function () { if (acc.open) openDocs[d.id] = 1; else delete openDocs[d.id]; });
-          dlist.appendChild(acc);
+          ((HELP_DOCS[d.id] && hlist) ? hlist : dlist).appendChild(acc);
         });
       }).catch(function () { say(dmsg, 'Couldn’t load the documents. Please try again.'); });
     };
@@ -1005,14 +1021,25 @@
       }).catch(function () {});
     };
     var sbody = document.getElementById('signin-list');   // spec §63: recent sign-ins (owners)
-    // spec §83: Admin sub-tabs
-    Array.prototype.forEach.call(document.querySelectorAll('#admin .subtab'), function (b) {
-      b.addEventListener('click', function () {
-        Array.prototype.forEach.call(document.querySelectorAll('#admin .subtab'), function (x) { x.setAttribute('aria-selected', String(x === b)); });
-        Array.prototype.forEach.call(document.querySelectorAll('#admin .admin-sub'), function (sec) { sec.hidden = sec.id !== b.getAttribute('data-sub'); });
+    // spec §113: sub-tabs in every tab; a tab whose sub-tabs are all hidden (role) is hidden too (Board of Trustees)
+    Array.prototype.forEach.call(document.querySelectorAll('#officer-panel .subtabs'), function (bar) {
+      var btns = Array.prototype.filter.call(bar.children, function (x) { return x.classList.contains('subtab'); });
+      var pick = function (b) {
+        btns.forEach(function (x) { x.setAttribute('aria-selected', String(x === b)); var p = document.getElementById(x.getAttribute('data-sub')); if (p) p.hidden = x !== b; });
         if (b.getAttribute('data-sub') === 'admin-downloads') loadReview();
-        if (b.getAttribute('data-sub') === 'admin-letters') loadLetters();
-      });
+      };
+      btns.forEach(function (b) { b.addEventListener('click', function () { pick(b); }); });
+      var panel = bar.closest('.tab-panel'), tab = panel && document.querySelector('.tab[aria-controls="' + panel.id + '"]');
+      var sync = function () {
+        var vis = btns.filter(function (x) { return !x.hidden; });
+        if (panel && panel.id === 'board' && tab) {
+          var was = tab.hidden; tab.hidden = !vis.length;
+          if (!tab.hidden && was) { var cur = document.querySelector('#officer-panel .tab[aria-selected="true"]'); if (cur && cur.hidden) tab.click(); }
+        }
+        var sel = btns.filter(function (x) { return x.getAttribute('aria-selected') === 'true'; })[0];
+        if (vis.length && (!sel || sel.hidden)) pick(vis[0]);
+      };
+      if (window.MutationObserver) new MutationObserver(sync).observe(bar, { attributes: true, subtree: true, attributeFilter: ['hidden'] });
     });
     // spec §106: Admin -> Downloads: review every pushed PDF (View, Download, Approve, Deny, Revise)
     var rvList = document.getElementById('review-list'), rvMsg = document.getElementById('review-msg');
@@ -1029,155 +1056,127 @@
     };
     var rvOpenState = {};   // which groups / cards are open (kept across reloads); all closed by default (Alex, 2026-11-26)
     var rvDetails = function (key, cls) { var d = document.createElement('details'); d.className = cls; d.open = !!rvOpenState[key]; d.addEventListener('toggle', function () { rvOpenState[key] = d.open; }); return d; };
-    var RV_GROUPS = [['board', 'For the Board tab (trustees)'], ['approvals', 'For the Approvals tab (officers)'], ['', 'Download only']];
-    var loadReview = function () {
-      if (!rvList) return;
-      post({ form: 'admin_review_list', token: tok() }).then(function (res) {
-        if (res.signedOut) return signOut(res.error);
-        rvList.innerHTML = '';
-        if (!res.ok) { say(rvMsg, res.error); return; }
-        if (!res.docs.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
-        RV_GROUPS.forEach(function (g) {
-          var docs = res.docs.filter(function (d) { return d.kind !== 'letter' && d.target === g[0]; }); if (!docs.length) return;
-          var gbox = rvDetails('g:' + g[0], 'review-groupbox'), gh = document.createElement('summary'); gh.className = 'review-group'; gh.textContent = g[1] + ' (' + docs.length + ')'; gbox.appendChild(gh); rvList.appendChild(gbox);
-          docs.forEach(function (d) {
-            var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
-            var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = (d.docno ? d.docno + ' \u00b7 ' : '') + d.title; sm.appendChild(h); card.appendChild(sm);
-            var badge = document.createElement('span'), st = { Approve: ['\u2713 Approved', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
-            badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge);
-            var mt = document.createElement('p'); mt.className = 'trustee-meta';
-            mt.textContent = (/^\d+\.\d/.test(d.version) ? 'Version ' + d.version : 'Built ' + d.version) + ' \u00b7 pushed ' + d.pushed + (d.target ? ' \u00b7 ' + (d.replaces ? 'replaces the live file' : 'new document') : '');
-            card.appendChild(mt);
-            if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': \u201c' + d.note + '\u201d' : ''); card.appendChild(dn); }
-            var acts = document.createElement('div'); acts.className = 'officer-actions';
-            var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + d.title);
-            [['View', 'btn-outline'], ['Download', 'btn-outline'], ['Approve', 'btn-primary'], ['Deny', 'btn-outline'], ['Revise', 'btn-outline']].forEach(function (b) {
-              var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn btn-sm ' + b[1]; bt.textContent = b[0];
-              bt.addEventListener('click', function () {
-                if (b[0] === 'View' || b[0] === 'Download') return rvOpen(d, bt, b[0] === 'Download');
-                if (b[0] !== 'Approve' && !note.value.trim()) { note.focus(); return say(rvMsg, 'Please add a note saying why or what to change.'); }
-                bt.disabled = true; say(rvMsg, (b[0] === 'Approve' && d.target ? 'Approving and publishing ' : 'Saving ') + d.title + '\u2026', true);
-                post({ form: 'admin_review_decide', token: tok(), id: d.id, decision: b[0], note: note.value }).then(function (r) {
-                  if (r.signedOut) return signOut(r.error);
-                  if (!r.ok) return say(rvMsg, r.error);
-                  say(rvMsg, d.title + ': ' + r.message, true); loadReview();
-                }).catch(function () { say(rvMsg, 'Couldn\u2019t save. Please try again.'); }).then(function () { bt.disabled = false; });
-              });
-              acts.appendChild(bt);
-            });
-            card.appendChild(note); card.appendChild(acts); gbox.appendChild(card);
-          });
-        });
-      }).catch(function () { say(rvMsg, 'Couldn\u2019t load the documents. Please try again.'); });
+    // spec §113: Downloads in collapsible sections that mirror the officers-page tabs and sub-tabs
+    var RV_SECTIONS = [['Membership', ['Registrations', 'Print name tags']], ['Events', ['Inaugural Night']], ['Help', ['']], ['Board of Trustees', ['Board documents', 'Tax and pricing model']], ['Letters', ['']], ['Other', ['']]];
+    var rvSection = function (d) {
+      var k = d.key || '';
+      if (d.kind === 'letter' || /^LTR-/.test(k)) return ['Letters', ''];
+      if (k === 'NAME-TAGS') return ['Membership', 'Print name tags'];
+      if (/^(FORM-|PASS-|LANYARD|GUEST-)/.test(k)) return ['Membership', 'Registrations'];
+      if (k === 'P-2.2') return ['Help', ''];
+      if (/^(OD-|P-2\.|COIN-|CERT-|FLYER-)/.test(k)) return ['Events', 'Inaugural Night'];
+      if (/^BD-00[4-7]$/.test(k)) return ['Board of Trustees', 'Tax and pricing model'];
+      if (/^(TD-|MIN-|BD-)/.test(k) || d.target === 'board') return ['Board of Trustees', 'Board documents'];
+      if (d.target === 'approvals') return ['Events', 'Inaugural Night'];
+      return ['Other', ''];
     };
-    // spec §111: Admin -> Letters
-    var ltList = document.getElementById('letter-list'), ltMsg = document.getElementById('letter-msg');
+    var decideBtn = function (d, bt, label, note, okText) {
+      if (label !== 'Approve' && !note.value.trim()) { note.focus(); return say(rvMsg, 'Please add a note saying why or what to change.'); }
+      bt.disabled = true; say(rvMsg, okText, true);
+      post({ form: 'admin_review_decide', token: tok(), id: d.id, decision: label, note: note.value }).then(function (r) {
+        if (r.signedOut) return signOut(r.error);
+        if (!r.ok) return say(rvMsg, r.error);
+        say(rvMsg, (d.subject || d.title) + ': ' + r.message, true); loadReview();
+      }).catch(function () { say(rvMsg, 'Couldn’t save. Please try again.'); }).then(function () { bt.disabled = false; });
+    };
     var copyLetter = function (d, html) {
       var subject = 'Subject: ' + (d.subject || d.title), plain = subject + '\n\n' + (d.text || '');
       if (html && d.emailHtml && window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {
         return navigator.clipboard.write([new ClipboardItem({ 'text/html': new Blob([d.emailHtml], { type: 'text/html' }), 'text/plain': new Blob([plain], { type: 'text/plain' }) })])
-          .then(function () { say(ltMsg, 'Copied the email (formatted and plain text). Paste it into the message; the subject is: ' + (d.subject || d.title), true); });
+          .then(function () { say(rvMsg, 'Copied the email (formatted and plain text). Paste it into the message; the subject is: ' + (d.subject || d.title), true); });
       }
-      return (navigator.clipboard ? navigator.clipboard.writeText(plain) : Promise.reject()).then(function () { say(ltMsg, 'Copied the plain text (subject first).', true); })
-        .catch(function () { say(ltMsg, 'Couldn\u2019t copy automatically. Use Download instead.'); });
+      return (navigator.clipboard ? navigator.clipboard.writeText(plain) : Promise.reject()).then(function () { say(rvMsg, 'Copied the plain text (subject first).', true); })
+        .catch(function () { say(rvMsg, 'Couldn\u2019t copy automatically. Use Download instead.'); });
     };
-    var loadLetters = function () {
-      if (!ltList) return;
-      post({ form: 'admin_review_list', token: tok() }).then(function (res) {
-        if (res.signedOut) return signOut(res.error);
-        ltList.innerHTML = '';
-        if (!res.ok) { say(ltMsg, res.error); return; }
-        var letters = res.docs.filter(function (d) { return d.kind === 'letter'; });
-        if (!letters.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'No letters yet.'; ltList.appendChild(n0); return; }
-        letters.forEach(function (d) {
-          var card = rvDetails('l:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
-          var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = d.subject || d.title; sm.appendChild(h);
-          var st = { Approve: ['\u2713 Approved to send', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
-          var badge = document.createElement('span'); badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge); card.appendChild(sm);
-          var mt = document.createElement('p'); mt.className = 'trustee-meta'; mt.textContent = 'To: ' + (d.to || '\u2014') + ' \u00b7 dated ' + d.version + ' \u00b7 pushed ' + d.pushed; card.appendChild(mt);
-          if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': \u201c' + d.note + '\u201d' : ''); card.appendChild(dn); }
-          var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + (d.subject || d.title));
-          var acts = document.createElement('div'); acts.className = 'officer-actions';
-          [['View', 'btn-outline'], ['Download', 'btn-outline'], ['Copy email', 'btn-outline'], ['Copy text', 'btn-outline'], ['Approve', 'btn-primary'], ['Deny', 'btn-outline'], ['Revise', 'btn-outline']].forEach(function (b) {
-            var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn btn-sm ' + b[1]; bt.textContent = b[0];
-            bt.addEventListener('click', function () {
-              if (b[0] === 'View' || b[0] === 'Download') return rvOpen(d, bt, b[0] === 'Download', ltMsg);
-              if (b[0] === 'Copy email' || b[0] === 'Copy text') return copyLetter(d, b[0] === 'Copy email');
-              if (b[0] !== 'Approve' && !note.value.trim()) { note.focus(); return say(ltMsg, 'Please add a note saying why or what to change.'); }
-              bt.disabled = true; say(ltMsg, 'Saving\u2026', true);
-              post({ form: 'admin_review_decide', token: tok(), id: d.id, decision: b[0], note: note.value }).then(function (r) {
-                if (r.signedOut) return signOut(r.error);
-                if (!r.ok) return say(ltMsg, r.error);
-                say(ltMsg, (d.subject || d.title) + ': ' + r.message, true); loadLetters();
-              }).catch(function () { say(ltMsg, 'Couldn\u2019t save. Please try again.'); }).then(function () { bt.disabled = false; });
-            });
-            acts.appendChild(bt);
-          });
-          card.appendChild(note); card.appendChild(acts); ltList.appendChild(card);
-        });
-      }).catch(function () { say(ltMsg, 'Couldn\u2019t load the letters. Please try again.'); });
+    // Trustee email (View email / Send email) beside its PDF (spec §83, moved by §113)
+    var emailBits = function (em, card, acts) {
+      var sub = document.createElement('p'); sub.className = 'trustee-meta';
+      sub.textContent = 'Trustee email: ' + em.subject + ' · ' + (em.sent.length ? 'last sent ' + em.sent[em.sent.length - 1].when + ' by ' + em.sent[em.sent.length - 1].by + (em.sent.length > 1 ? ' (sent ' + em.sent.length + ' times)' : '') : 'not sent yet');
+      card.insertBefore(sub, acts);
+      var prev = document.createElement('div'); prev.className = 'tdoc-preview'; prev.hidden = true;
+      var hd = document.createElement('dl'); hd.className = 'tdoc-head';
+      [['From', em.from], ['To', em.to.join(', ')], ['Cc', em.cc.join(', ')], ['Subject', em.subject]].forEach(function (kv) {
+        var dt = document.createElement('dt'); dt.textContent = kv[0]; var dd = document.createElement('dd'); dd.textContent = kv[1]; hd.appendChild(dt); hd.appendChild(dd);
+      });
+      var fr = document.createElement('iframe'); fr.className = 'tdoc-body'; fr.title = 'Email preview'; fr.setAttribute('sandbox', ''); fr.srcdoc = em.html;
+      prev.appendChild(hd); prev.appendChild(fr);
+      var att = document.createElement('p'); att.className = em.attachment ? 'mail-att-label' : 'form-msg';
+      att.textContent = em.attachment ? '1 attachment: ' + em.attachment.name + ' (' + em.attachment.size + ')' : 'No attachment: the document PDF is missing in Trustee documents, so Send will refuse.';
+      prev.appendChild(att);
+      var view = document.createElement('button'); view.type = 'button'; view.className = 'btn btn-sm btn-outline'; view.textContent = 'View email';
+      view.addEventListener('click', function () { prev.hidden = !prev.hidden; view.textContent = prev.hidden ? 'View email' : 'Hide email'; });
+      var send = document.createElement('button'); send.type = 'button'; send.className = 'btn btn-sm btn-outline'; send.textContent = 'Send email';
+      send.addEventListener('click', function () {
+        var last = em.sent.length ? '\n\nAlready sent ' + em.sent.length + ' time(s), last on ' + em.sent[em.sent.length - 1].when + '.' : '';
+        var c = window.prompt('Send "' + em.subject + '"\nfrom ' + em.from + '\nto ' + em.to.join(', ') + '\ncc ' + em.cc.join(', ') + last + '\n\nType SEND to send it now.');
+        if (c === null) return;
+        send.disabled = true; say(rvMsg, 'Sending…', true);
+        post({ form: 'admin_trustee_email_send', token: tok(), id: em.id, confirm: String(c).trim() }).then(function (r) {
+          if (r.signedOut) return signOut(r.error);
+          if (!r.ok) return say(rvMsg, r.error);
+          say(rvMsg, 'Sent ' + r.sent + '.', true); loadReview();
+        }).catch(function () { say(rvMsg, 'Couldn’t send the email. Please try again.'); }).then(function () { send.disabled = false; });
+      });
+      acts.appendChild(view); acts.appendChild(send); card.appendChild(prev);
     };
-    // spec §83: trustee emails: View email (exactly as sent) and Send email (typed SEND confirmation)
-    var tdList = document.getElementById('tdoc-list'), tdMsg = document.getElementById('tdoc-msg');
-    var loadTrusteeEmails = function () {
-      if (!tdList) return;
-      post({ form: 'admin_trustee_emails', token: tok() }).then(function (res) {
-        if (res.signedOut) return signOut(res.error);
-        tdList.innerHTML = '';
-        if (!res.ok) { say(tdMsg, res.error); return; }
-        if (!res.emails.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'No trustee emails yet.'; tdList.appendChild(n0); return; }
-        res.emails.forEach(function (em) {
-          var card = document.createElement('div'); card.className = 'doc-card-o doc-body tdoc-card';
-          var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = em.title + (em.alias ? ' (' + em.alias + ')' : ''); card.appendChild(h);
-          var mt = document.createElement('p'); mt.className = 'trustee-meta'; mt.textContent = 'Document No.: ' + em.docno + ' · Version: ' + em.version; card.appendChild(mt);
-          var sub = document.createElement('p'); sub.innerHTML = '<b>Email:</b> '; sub.appendChild(document.createTextNode(em.subject)); card.appendChild(sub);
-          var st = document.createElement('p'); st.className = 'trustee-meta';
-          st.textContent = em.sent.length ? 'Last sent: ' + em.sent[em.sent.length - 1].when + ' by ' + em.sent[em.sent.length - 1].by + (em.sent.length > 1 ? ' (sent ' + em.sent.length + ' times)' : '') : 'Not sent yet.';
-          card.appendChild(st);
-          var prev = document.createElement('div'); prev.className = 'tdoc-preview'; prev.hidden = true;
-          var hd = document.createElement('dl'); hd.className = 'tdoc-head';
-          [['From', em.from], ['To', em.to.join(', ')], ['Cc', em.cc.join(', ')], ['Subject', em.subject]].forEach(function (kv) {
-            var dt = document.createElement('dt'); dt.textContent = kv[0]; var dd = document.createElement('dd'); dd.textContent = kv[1]; hd.appendChild(dt); hd.appendChild(dd);
-          });
-          var fr = document.createElement('iframe'); fr.className = 'tdoc-body'; fr.title = 'Email preview'; fr.setAttribute('sandbox', ''); fr.srcdoc = em.html;
-          prev.appendChild(hd); prev.appendChild(fr);
-          // attachment chip, like an email client: opens the exact PDF that will be attached (spec §83)
-          var att = document.createElement('div'); att.className = 'mail-atts';
-          if (em.attachment) {
-            var chip = document.createElement('button'); chip.type = 'button'; chip.className = 'mail-att';
-            chip.innerHTML = '<span class="mail-att-ico" aria-hidden="true">PDF</span><span class="mail-att-name"></span><span class="mail-att-size"></span>';
-            chip.querySelector('.mail-att-name').textContent = em.attachment.name; chip.querySelector('.mail-att-size').textContent = em.attachment.size;
-            chip.title = 'Open the attachment';
-            chip.addEventListener('click', function () {
-              chip.disabled = true; say(tdMsg, 'Opening the attachment\u2026', true);
-              post({ form: 'officer_trustee_doc', token: tok(), id: em.id }).then(function (r) {
-                if (r.signedOut) return signOut(r.error);
-                if (!r.ok) return say(tdMsg, r.error);
-                var a = document.createElement('a'); a.href = URL.createObjectURL(b64Blob(r.data, r.mime)); a.target = '_blank'; a.rel = 'noopener';
-                document.body.appendChild(a); a.click(); a.remove(); say(tdMsg, '');
-              }).catch(function () { say(tdMsg, 'Couldn\u2019t open the attachment.'); }).then(function () { chip.disabled = false; });
-            });
-            var al = document.createElement('p'); al.className = 'mail-att-label'; al.textContent = '1 attachment'; att.appendChild(al); att.appendChild(chip);
-          } else { var na = document.createElement('p'); na.className = 'form-msg'; na.textContent = 'No attachment: the document PDF is missing in Trustee documents, so Send will refuse.'; att.appendChild(na); }
-          prev.appendChild(att);
-          var view = document.createElement('button'); view.type = 'button'; view.className = 'btn btn-sm btn-outline'; view.textContent = 'View email';
-          view.addEventListener('click', function () { prev.hidden = !prev.hidden; view.textContent = prev.hidden ? 'View email' : 'Hide email'; });
-          var send = document.createElement('button'); send.type = 'button'; send.className = 'btn btn-sm btn-primary'; send.textContent = 'Send email';
-          send.addEventListener('click', function () {
-            var last = em.sent.length ? '\n\nAlready sent ' + em.sent.length + ' time(s), last on ' + em.sent[em.sent.length - 1].when + '.' : '';
-            var c = window.prompt('Send "' + em.subject + '"\nfrom ' + em.from + '\nto ' + em.to.join(', ') + '\ncc ' + em.cc.join(', ') + last + '\n\nType SEND to send it now.');
-            if (c === null) return;
-            send.disabled = true; say(tdMsg, 'Sending…', true);
-            post({ form: 'admin_trustee_email_send', token: tok(), id: em.id, confirm: String(c).trim() }).then(function (r) {
-              if (r.signedOut) return signOut(r.error);
-              if (!r.ok) return say(tdMsg, r.error);
-              say(tdMsg, 'Sent ' + r.sent + '.', true); loadTrusteeEmails();
-            }).catch(function () { say(tdMsg, 'Couldn’t send the email. Please try again.'); }).then(function () { send.disabled = false; });
-          });
-          var acts = document.createElement('p'); acts.className = 'officer-actions'; acts.appendChild(view); acts.appendChild(document.createTextNode(' ')); acts.appendChild(send);
-          card.appendChild(acts); card.appendChild(prev); tdList.appendChild(card);
+    var reviewCard = function (d, box, em) {
+      var letter = d.kind === 'letter';
+      var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
+      var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = letter ? (d.subject || d.title) : (d.docno ? d.docno + ' · ' : '') + d.title; sm.appendChild(h); card.appendChild(sm);
+      var st = { Approve: [letter ? '✓ Approved to send' : '✓ Approved', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
+      var badge = document.createElement('span'); badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge);
+      var mt = document.createElement('p'); mt.className = 'trustee-meta';
+      mt.textContent = letter ? 'To: ' + (d.to || '—') + ' · dated ' + d.version + ' · pushed ' + d.pushed
+        : (/^\d+\.\d/.test(d.version) ? 'Version ' + d.version : 'Built ' + d.version) + ' · pushed ' + d.pushed + (d.target ? ' · ' + (d.replaces ? 'replaces the live file' : 'new document') : '');
+      card.appendChild(mt);
+      if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': “' + d.note + '”' : ''); card.appendChild(dn); }
+      var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + (d.subject || d.title));
+      var acts = document.createElement('div'); acts.className = 'officer-actions';
+      var labels = letter ? ['View', 'Download', 'Copy email', 'Copy text', 'Approve', 'Deny', 'Revise'] : ['View', 'Download', 'Approve', 'Deny', 'Revise'];
+      labels.forEach(function (l) {
+        var bt = document.createElement('button'); bt.type = 'button'; bt.className = 'btn btn-sm ' + (l === 'Approve' ? 'btn-primary' : 'btn-outline'); bt.textContent = l;
+        bt.addEventListener('click', function () {
+          if (l === 'View' || l === 'Download') return rvOpen(d, bt, l === 'Download');
+          if (l === 'Copy email' || l === 'Copy text') return copyLetter(d, l === 'Copy email');
+          decideBtn(d, bt, l, note, letter ? 'Saving…' : (l === 'Approve' && d.target ? 'Approving and publishing ' : 'Saving ') + d.title + '…');
         });
-      }).catch(function () { say(tdMsg, 'Couldn’t load the trustee emails.'); });
+        acts.appendChild(bt);
+      });
+      card.appendChild(note); card.appendChild(acts);
+      if (em) emailBits(em, card, acts);
+      box.appendChild(card);
+    };
+    var loadReview = function () {
+      if (!rvList) return;
+      Promise.all([post({ form: 'admin_review_list', token: tok() }), post({ form: 'admin_trustee_emails', token: tok() }).catch(function () { return { ok: false }; })]).then(function (rr) {
+        var res = rr[0], ems = (rr[1] && rr[1].ok) ? rr[1].emails : [];
+        if (res.signedOut) return signOut(res.error);
+        rvList.innerHTML = '';
+        if (!res.ok) { say(rvMsg, res.error); return; }
+        var used = {};
+        var emFor = function (d) { var m = ems.filter(function (e) { return e.docno && e.docno === d.docno; })[0]; if (m) used[m.id] = 1; return m; };
+        var docs = res.docs.map(function (d) { return { d: d, sec: rvSection(d) }; });
+        var orphan = ems.filter(function (e) { return !res.docs.some(function (d) { return d.docno && d.docno === e.docno; }); });
+        if (!docs.length && !orphan.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
+        RV_SECTIONS.forEach(function (S) {
+          var mine = docs.filter(function (x) { return x.sec[0] === S[0]; });
+          var extra = S[0] === 'Board of Trustees' ? orphan : [];
+          if (!mine.length && !extra.length) return;
+          var gbox = rvDetails('g:' + S[0], 'review-groupbox'), gh = document.createElement('summary'); gh.className = 'review-group'; gh.textContent = S[0] + ' (' + (mine.length + extra.length) + ')'; gbox.appendChild(gh); rvList.appendChild(gbox);
+          S[1].forEach(function (subName) {
+            var list = mine.filter(function (x) { return x.sec[1] === subName; }), more = subName === 'Board documents' ? extra : [];
+            if (!list.length && !more.length) return;
+            var box = gbox;
+            if (subName) { box = rvDetails('s:' + S[0] + '/' + subName, 'review-groupbox review-subbox'); var sh = document.createElement('summary'); sh.className = 'review-group review-subgroup'; sh.textContent = subName + ' (' + (list.length + more.length) + ')'; box.appendChild(sh); gbox.appendChild(box); }
+            list.forEach(function (x) { reviewCard(x.d, box, emFor(x.d)); });
+            more.forEach(function (em) {   // a trustee email whose PDF isn't in Downloads: email buttons only
+              var card = rvDetails('e:' + em.id, 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
+              var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = em.docno + ' · ' + em.title; sm.appendChild(h); card.appendChild(sm);
+              var acts = document.createElement('div'); acts.className = 'officer-actions'; card.appendChild(acts); emailBits(em, card, acts); box.appendChild(card);
+            });
+          });
+        });
+      }).catch(function () { say(rvMsg, 'Couldn’t load the documents. Please try again.'); });
     };
     var loadSignIns = function () {
       if (!sbody) return;
@@ -1610,6 +1609,8 @@
     }
     var fromHash = function () {   // a #link to something inside a tab (e.g. #tax-notes) opens that tab and scrolls to it (spec §105)
       var id = (location.hash || '').slice(1), el = id && document.getElementById(id);
+      var OLD = { documents: ['events'], registrations: ['membership'], contest: ['events'], trustees: ['board', 'tab-trustees'], legal: ['board', 'tab-legal'], treasurer: ['board', 'tab-treasurer'] }[id];   // officers-page tabs renamed (spec §113): old links still work
+      if (!el && OLD && document.getElementById(OLD[0])) { show(OLD[0]); var sb = OLD[1] && document.getElementById(OLD[1]); if (sb) sb.click(); return; }
       if (el && document.getElementById('tab-' + id)) return show(id);
       var panel = el && el.closest ? el.closest('.tab-panel') : null;
       if (panel && document.getElementById('tab-' + panel.id)) { show(panel.id); return setTimeout(function () { el.scrollIntoView(); }, 0); }

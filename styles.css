@@ -1181,3 +1181,9 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
   table.programs { min-width: 0; }
   .programs th:not(:first-child):not(:nth-child(4)), .programs td:not(:first-child):not(:nth-child(4)) { display: none; }
 }
+/* Officers page reorganization (spec §113) */
+.lr-docno { margin-left: auto; font-size: .72rem; font-weight: 600; letter-spacing: .03em; color: var(--muted); background: #f3efe4; border: 1px solid var(--line); border-radius: 4px; padding: 1px 6px; white-space: nowrap; }
+.review-subbox { margin: 6px 0 6px 14px; }
+.review-subgroup { font-size: .92rem; }
+.sub-panel .subtabs { margin-top: 2px; }
+@media (max-width: 700px) { .review-subbox { margin-left: 6px; } .lr-docno { margin-left: 0; } }
