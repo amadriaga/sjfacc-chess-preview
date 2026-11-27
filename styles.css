@@ -1187,3 +1187,7 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 .review-subgroup { font-size: .92rem; }
 .sub-panel .subtabs { margin-top: 2px; }
 @media (max-width: 700px) { .review-subbox { margin-left: 6px; } .lr-docno { margin-left: 0; } }
+/* Downloads: approved and published marker (spec §114) */
+.review-published { border-left: 3px solid var(--gold); background: #faf6ea; padding: 8px 12px; border-radius: 0 6px 6px 0; margin: 6px 0 10px; font-size: .9rem; }
+.review-published p { margin: 0; } .review-published-status { font-weight: 600; margin-top: 2px !important; }
+.review-sum .review-badge + .review-badge { margin-left: 6px; }

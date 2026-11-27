@@ -322,6 +322,7 @@
       };
       post({ form: 'officer_legal_reqs', token: tok() }).then(draw).catch(function () { lt.hidden = true; });
     };
+    var rvTrust = {}, rvOff = {}, rvBoard = 0;   // spec §114: latest trustee / officer status by Drive file ID, for the Downloads markers
     // spec §80: trustee approvals with a typed electronic signature (tab shown only to trustees and owners)
     var loadTrustees = function () {
       var tlist = document.getElementById('trustee-list'), tmsg = document.getElementById('trustee-msg'), ttab = document.getElementById('tab-trustees');
@@ -334,6 +335,7 @@
         if (!res.ok) { ttab.hidden = true; if (ptab) ptab.hidden = true; return; }
         var wasOpen = {}; Array.prototype.forEach.call(document.querySelectorAll('#trustee-list details.td-group, #pricing-list details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
         ttab.hidden = false; tlist.innerHTML = ''; if (ptab) ptab.hidden = false; if (plist) plist.innerHTML = '';
+        res.docs.forEach(function (d) { rvTrust[d.id] = d; });
         [[tlist, false, 'No trustee documents yet.'], [plist, true, 'No tax and pricing documents yet.']].forEach(function (x) {
           if (x[0] && !res.docs.some(function (d) { return !!isPricing(d) === x[1]; })) { var none = document.createElement('p'); none.className = 'note'; none.textContent = x[2]; x[0].appendChild(none); }
         });
@@ -747,6 +749,7 @@
         if (res.signedOut) return signOut(res.error);
         if (!res.ok) { dlist.innerHTML = ''; return say(dmsg, res.error); }
         dlist.innerHTML = ''; if (hlist) hlist.innerHTML = '';
+        rvBoard = res.board || 0; res.docs.forEach(function (d) { rvOff[d.id] = d; });
         var rank = function (d) { var i = EVENT_ORDER.indexOf(d.id); return i < 0 ? 99 : i; };
         res.docs = res.docs.slice().sort(function (x, y) { return rank(x) - rank(y); });
         var none0 = function (box, t) { if (box && !box.children.length) { var p = document.createElement('p'); p.className = 'note'; p.textContent = t; box.appendChild(p); } };
@@ -1119,6 +1122,29 @@
       });
       acts.appendChild(view); acts.appendChild(send); card.appendChild(prev);
     };
+    // spec §114: review key -> the live Drive file the approved PDF replaces (from scripts/review-manifest.json)
+    var REVIEW_KEY_ID = { 'TD-001': '1R1QyISWYQ8BdyRpCSngeFdiBS4lJE7-B', 'TD-002': '1c0kw3-2RY7d1EooGAuJpA5RSNFA-n7Yg', 'MIN-001': '1mx5bYIbiDKC3r9wIzYZc8be94pBgokYd',
+      'BD-001': '1RHfpnvcq-jk4dVwzC0y5XuaNyUxjspH5', 'BD-002': '1c59lmgQGKgAupcT2ECKx72TmenY_Y3dt', 'BD-003': '195rbDfGlz3AUyT57WmqFrvGdykm_zGxa', 'BD-004': '1lFls0EBinWg1gJyHP8CMWoRfoUGz4a5u',
+      'BD-005': '1Oyp4abvcW2VgqHiveJ6T56WkdNEwVaL0', 'BD-006': '1__nkvrhpszLPqWAi6zK4plnwgkxOEO4U', 'OD-001': '14iyQrVBchcDzs5wNLdFcPa88QG8H6xNh', 'OD-002': '1EVucNcWRywuGpZFtaCeIWhuul92knxbc',
+      'P-2.1': '170XFYSlfwgl4G1uUsIdIr2wimo-YOXG-', 'P-2.2': '1H-aCHv_vvj9DgGKThlCR2NVVT7ayvj1w', 'P-2.3': '1uk1WKIiMu_2tk6CkGThLm68MHvR-mzMT', 'P-2.4': '13tyPvLl7GQ_Cmgw4EXgZHfyZIIz_a8O9' };
+    // After the admin approves: [status line, chip class, short chip text] for the officers' or trustees' own approval
+    var publishedStatus = function (d) {
+      var id = REVIEW_KEY_ID[d.key], q = '’';
+      if (d.target === 'board') {
+        var t = id && rvTrust[id];
+        if (!t) return ['Awaiting trustees' + q + ' approval' + (d.replaces ? '' : ' (it appears for signing once its decisions are set up)'), 'wait', 'Awaiting trustees'];
+        if (!t.items.length) return ['Published for the trustees to read (nothing to sign)', 'ok', 'With trustees'];
+        if (t.full) return ['✓ Fully approved by all trustees', 'ok', '✓ Trustees approved'];
+        return ['Awaiting trustees' + q + ' approval: ' + t.trustees.filter(function (x) { return x.signed; }).length + ' of ' + t.trustees.length + ' signed', 'wait', 'Awaiting trustees'];
+      }
+      var o = id && rvOff[id];
+      if (!o) return ['Awaiting officers' + q + ' approval', 'wait', 'Awaiting officers'];
+      if (o.docResult === 'Approved') return ['✓ Approved by the officers', 'ok', '✓ Officers approved'];
+      if (o.docResult === 'Not approved') return ['Not approved by the officers', 'no', 'Officers: not approved'];
+      if (o.docResult === 'Revise') return ['The officers asked for a revision', 'warn', 'Officers: revise'];
+      var tl = o.docTally || {}, v = (tl['Approved'] || 0) + (tl['Not approved'] || 0) + (tl['Revise'] || 0);
+      return ['Awaiting officers' + q + ' approval: ' + v + ' of ' + rvBoard + ' voted', 'wait', 'Awaiting officers'];
+    };
     var reviewCard = function (d, box, em) {
       var letter = d.kind === 'letter';
       var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
@@ -1130,6 +1156,15 @@
         : (/^\d+\.\d/.test(d.version) ? 'Version ' + d.version : 'Built ' + d.version) + ' · pushed ' + d.pushed + (d.target ? ' · ' + (d.replaces ? 'replaces the live file' : 'new document') : '');
       card.appendChild(mt);
       if (d.decision) { var dn = document.createElement('p'); dn.className = 'trustee-meta'; dn.textContent = st[0] + ' by ' + d.by + ' on ' + d.at + (d.note ? ': “' + d.note + '”' : ''); card.appendChild(dn); }
+      if (d.decision === 'Approve' && d.target && !letter) {   // spec §114: approved here -> published to the right list -> now with the officers or trustees
+        var sec = rvSection(d), ps = publishedStatus(d);
+        badge.textContent = '✓ Approved · published';
+        var chip = document.createElement('span'); chip.className = 'review-badge review-' + ps[1]; chip.textContent = ps[2]; sm.appendChild(chip);
+        var pub = document.createElement('div'); pub.className = 'review-published';
+        var p1 = document.createElement('p'); p1.textContent = 'Published to ' + sec[0] + (sec[1] ? ' → ' + sec[1] : '') + ' on ' + d.at + (d.replaces ? ' (replaced the live file; links, comments and signatures kept)' : ' (new file)') + '.';
+        var p2 = document.createElement('p'); p2.className = 'review-published-status'; p2.textContent = 'Now: ' + ps[0];
+        pub.appendChild(p1); pub.appendChild(p2); card.appendChild(pub);
+      }
       var note = document.createElement('textarea'); note.className = 'review-note'; note.rows = 2; note.placeholder = 'Note (needed for Deny or Revise)'; note.setAttribute('aria-label', 'Note for ' + (d.subject || d.title));
       var acts = document.createElement('div'); acts.className = 'officer-actions';
       var labels = letter ? ['View', 'Download', 'Copy email', 'Copy text', 'Approve', 'Deny', 'Revise'] : ['View', 'Download', 'Approve', 'Deny', 'Revise'];
