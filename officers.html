@@ -100,7 +100,7 @@
             <div class="tabs" role="tablist" aria-label="Officer tools">
               <button class="tab" role="tab" id="tab-membership" aria-controls="membership" aria-selected="true">Membership</button>
               <button class="tab" role="tab" id="tab-events" aria-controls="events" aria-selected="false">Events</button>
-              <button class="tab" role="tab" id="tab-officers" aria-controls="officers" aria-selected="false">Club Officers</button>
+              <button class="tab" role="tab" id="tab-officers" aria-controls="officers" aria-selected="false">Table of Organization</button>
               <button class="tab" role="tab" id="tab-help" aria-controls="help" aria-selected="false">Help</button>
               <button class="tab" role="tab" id="tab-board" aria-controls="board" aria-selected="false" hidden>Board of Trustees</button>
               <button class="tab" role="tab" id="tab-admin" aria-controls="admin" aria-selected="false" hidden>Admin</button>
@@ -120,7 +120,7 @@
               </div>
             </div>
             <div class="tab-panel" id="events" role="tabpanel" aria-labelledby="tab-events" hidden>
-              <div class="subtabs" role="tablist" aria-label="Events"><button class="subtab" type="button" role="tab" data-sub="sub-inaugural" aria-selected="true">Inaugural Night</button></div>
+              <div class="subtabs" role="tablist" aria-label="Events"><button class="subtab" type="button" role="tab" data-sub="sub-inaugural" id="sub-btn-inaugural" aria-selected="true">Inaugural Night</button><button class="subtab" type="button" role="tab" data-sub="sub-contest" id="sub-btn-contest" aria-selected="false">T-shirt contest: 2028 shirt entries</button></div>
               <div class="sub-panel" id="sub-inaugural">
                 <div class="entries-review docs-review" id="documents-box">
                   <h3>Inaugural Night</h3>
@@ -128,6 +128,8 @@
                   <div class="doc-list" id="doc-list"><p class="note">Loading&hellip;</p></div>
                   <p class="officer-msg" id="doc-msg" role="status"></p>
                 </div>
+              </div>
+              <div class="sub-panel" id="sub-contest" hidden>
                 <div class="entries-review" id="entries-review">
                   <h3>T-shirt contest: 2028 shirt entries</h3>
                   <p class="note" style="margin:0 0 10px">Open each design, then approve it (it appears in the public gallery straight away) or reject it (never shown). You can change a decision later.</p>
@@ -176,6 +178,28 @@
                 <p class="note" style="margin:0 0 10px">Seen only by the System Administrator and Alex Madriaga. If someone can&rsquo;t get in through Request access, type their email here and send the invitation yourself (email from the SJFACC admin account, link valid 48 hours). Names come from the club&rsquo;s interim officer list; correct them in the sign-up sheet&rsquo;s &ldquo;SJFACC roster&rdquo; tab.</p>
                 <div class="admin-list" id="admin-list"><p class="note">Loading&hellip;</p></div>
                 <p class="officer-msg" id="admin-msg" role="status"></p>
+                <div class="sec-picker" role="group" aria-label="Sections to show"><span>Show:</span>
+              <label><input type="checkbox" data-sec="sec-fassj"> Interim officers and trustees</label>
+              <label><input type="checkbox" data-sec="sec-club" checked> Community officers</label>
+            </div>
+            <details class="doc-acc officer-sec" id="sec-fassj" open hidden>
+              <summary><span class="doc-title">SJFACC interim officers and trustees</span><span class="doc-sum">South Jersey Filipino-American Chess Community, Inc.</span></summary>
+              <div class="officer-sec-body">
+                <div class="reg-list" id="fassj-combined"><p class="note">Loading&hellip;</p></div>
+              </div>
+            </details>
+            <details class="doc-acc officer-sec" id="sec-club" open>
+              <summary><span class="doc-title">SJFACC officers</span><span class="doc-sum">Who can sign in here, invitations and access requests</span></summary>
+              <div class="officer-sec-body">
+              <div class="entries-review officer-roster">
+                <h3>Current officers</h3>
+                <div class="reg-list" id="officer-list"><p class="note">Loading&hellip;</p></div>
+              </div>
+            
+            
+              
+              </div>
+            </details>
                 <form class="invite-form hidden" id="invite-form" autocomplete="off">
               <h3>Invite an officer</h3>
               <p class="note" style="margin:0 0 10px">They get an email from the SJFACC admin account with a link (valid 48 hours) to set up Google Authenticator; then they can sign in here (with the role you choose).</p>
@@ -207,28 +231,22 @@
               </div>
             </div>
             <div class="tab-panel" id="officers" role="tabpanel" aria-labelledby="tab-officers" hidden>
-            <div class="sec-picker" role="group" aria-label="Sections to show"><span>Show:</span>
-              <label><input type="checkbox" data-sec="sec-fassj"> Interim officers and trustees</label>
-              <label><input type="checkbox" data-sec="sec-club" checked> Community officers</label>
-            </div>
-            <details class="doc-acc officer-sec" id="sec-fassj" open hidden>
-              <summary><span class="doc-title">SJFACC interim officers and trustees</span><span class="doc-sum">South Jersey Filipino-American Chess Community, Inc.</span></summary>
-              <div class="officer-sec-body">
-                <div class="reg-list" id="fassj-combined"><p class="note">Loading&hellip;</p></div>
+              <div class="subtabs" role="tablist" aria-label="Table of Organization"><button class="subtab" type="button" role="tab" data-sub="sub-org-trustees" aria-selected="true">Board of Trustees</button><button class="subtab" type="button" role="tab" data-sub="sub-org-officers" aria-selected="false">Interim Community Officers</button></div>
+              <div class="sub-panel" id="sub-org-trustees">
+                <div class="entries-review">
+                  <h3>Board of Trustees</h3>
+                  <p class="note" style="margin:0 0 10px">Read-only: name, position and status. Only the admin makes changes (Admin &rarr; Management).</p>
+                  <div class="org-list" id="org-trustees"><p class="note">Loading&hellip;</p></div>
+                </div>
               </div>
-            </details>
-            <details class="doc-acc officer-sec" id="sec-club" open>
-              <summary><span class="doc-title">SJFACC officers</span><span class="doc-sum">Who can sign in here, invitations and access requests</span></summary>
-              <div class="officer-sec-body">
-              <div class="entries-review officer-roster">
-                <h3>Current officers</h3>
-                <div class="reg-list" id="officer-list"><p class="note">Loading&hellip;</p></div>
+              <div class="sub-panel" id="sub-org-officers" hidden>
+                <div class="entries-review">
+                  <h3>Interim Community Officers</h3>
+                  <p class="note" style="margin:0 0 10px">Read-only: name, position and status. Only the admin makes changes (Admin &rarr; Management).</p>
+                  <div class="org-list" id="org-officers"><p class="note">Loading&hellip;</p></div>
+                </div>
               </div>
-            
-            
               <p class="note" id="officers-none">Need to add an officer? Ask them to use <a href="#request">Request access</a> on this page (or scan the officer QR code). The SJFACC admin account reviews every request and sends the invitation.</p>
-              </div>
-            </details>
             </div>
           </div>
         </div>
@@ -270,10 +288,10 @@
       </div>
       <div class="footer-bottom">
         <span>&copy; <span data-year>2026</span> South Jersey Filipino-American Chess Community, Inc. · All rights reserved<br><small class="protected">This site is protected by Cloudflare.</small></span>
-        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 327 · Nov 27, 2026</span></span>
+        <span><a href="/privacy.html">Privacy &amp; Disclaimer</a> · <a href="/site-info.html">Website info</a> · <span class="build" data-build>Build 328 · Nov 27, 2026</span></span>
       </div>
     </div>
   </footer>
-  <script src="/script.js?v=29c448e85c"></script>
+  <script src="/script.js?v=d0b8b6e326"></script>
 </body>
 </html>

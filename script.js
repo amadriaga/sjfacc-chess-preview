@@ -272,7 +272,7 @@
       }).catch(function () { say(msg, 'Couldn\u2019t load the invoices.'); });
     };
     // spec §93: Legal Requirements tab: the formation steps, start to finish, ticked when completed (who and when saved)
-    var LEGAL_DOCNO = { attachment: 'SJFACC-TD-002', meeting: 'SJFACC-BD-003', startup: 'SJFACC-TD-001' };   // the document each step comes from; default the Formation Document
+    var LEGAL_DOCNO = { attachment: 'SJFACC-BOT-BD-02', meeting: 'SJFACC-BOT-BD-06' };   // the document each step comes from (tab-based numbers, spec §115); default the Formation Document
     var loadLegal = function () {
       var lt = document.getElementById('tab-legal'), ll = document.getElementById('legal-list'), lm = document.getElementById('legal-msg'), lp = document.getElementById('legal-progress');
       if (!lt || !ll) return;
@@ -298,7 +298,7 @@
           var top = document.createElement('div'); top.className = 'lr-top';
           var b = document.createElement('span'); b.className = 'badge lr-badge' + (q.done ? ' lr-badge--done' : ''); b.textContent = q.done ? '✓ Completed' : 'Open'; top.appendChild(b);
           var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t);
-          var dn = document.createElement('span'); dn.className = 'lr-docno'; dn.textContent = q.docno || LEGAL_DOCNO[q.id] || 'SJFACC-TD-001'; top.appendChild(dn); card.appendChild(top);   // document control number (spec §113)
+          var dn = document.createElement('span'); dn.className = 'lr-docno'; dn.textContent = q.docno || LEGAL_DOCNO[q.id] || 'SJFACC-BOT-BD-01'; top.appendChild(dn); card.appendChild(top);   // document control number (spec §113)
           var d = document.createElement('p'); d.className = 'trustee-meta'; d.textContent = q.detail + (q.due ? ' Due: ' + q.due + '.' : ''); card.appendChild(d);
           if (q.by || q.at) { var w = document.createElement('p'); w.className = 'by'; w.textContent = (q.done ? 'Completed' : 'Marked not completed') + ' by ' + (q.by || '—') + (q.at ? ' on ' + q.at : '') + (q.note ? ' · ' + q.note : ''); card.appendChild(w); }
           var save = function (done, ctl) {   // completed steps are locked; only owners can reopen (spec §93)
@@ -328,7 +328,7 @@
       var tlist = document.getElementById('trustee-list'), tmsg = document.getElementById('trustee-msg'), ttab = document.getElementById('tab-trustees');
       var plist = document.getElementById('pricing-list'), ptab = document.getElementById('tab-pricing');   // spec §113: BD-004/005/006 (and BD-007 once published) -> Tax and pricing model
       var PRICING = { '1lFls0EBinWg1gJyHP8CMWoRfoUGz4a5u': 1, '1Oyp4abvcW2VgqHiveJ6T56WkdNEwVaL0': 1, '1__nkvrhpszLPqWAi6zK4plnwgkxOEO4U': 1 };
-      var isPricing = function (d) { return PRICING[d.id] || /BD-007/.test(d.docno || ''); };
+      var isPricing = function (d) { return PRICING[d.id] || /BOT-TP-|BD-007/.test(d.docno || ''); };
       if (!tlist || !ttab) return;
       post({ form: 'officer_trustee_docs', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
@@ -464,7 +464,7 @@
         var has = function (a) { return (res.roles || []).indexOf(a) !== -1; };   // spec §52: tabs by area
         var showEl = function (id, on) { var el = document.getElementById(id); if (el) el.hidden = !on; };   // officers-page tabs (spec §113)
         showEl('tab-membership', has('registrations')); showEl('tab-events', has('documents') || has('contest')); showEl('tab-help', has('documents')); showEl('tab-officers', has('officers'));
-        showEl('documents-box', has('documents')); showEl('entries-review', has('contest'));
+        showEl('sub-btn-inaugural', has('documents')); showEl('sub-btn-contest', has('contest'));
         var tAdmin = document.getElementById('tab-admin'); if (tAdmin) tAdmin.hidden = !res.owner;   // spec §55: owners only
         var cur = document.querySelector('#officer-panel .tab[aria-selected="true"]');
         if (!cur || cur.hidden) { var first = document.querySelector('#officer-panel .tab:not([hidden])'); if (first) first.click(); }
@@ -730,7 +730,7 @@
     };
     // spec §52 phase 1: Board documents (view, download, comments) and officer access requests
     var hlist = document.getElementById('help-list');   // spec §113: "How the SJFACC website works" goes to Help; the rest to Events -> Inaugural Night, in this order
-    var HELP_DOCS = { '1H-aCHv_vvj9DgGKThlCR2NVVT7ayvj1w': 1 }, EVENT_ORDER = ['170XFYSlfwgl4G1uUsIdIr2wimo-YOXG-', '1EVucNcWRywuGpZFtaCeIWhuul92knxbc', '14iyQrVBchcDzs5wNLdFcPa88QG8H6xNh', '1uk1WKIiMu_2tk6CkGThLm68MHvR-mzMT', '13tyPvLl7GQ_Cmgw4EXgZHfyZIIz_a8O9'];
+    var HELP_DOCS = { '170XFYSlfwgl4G1uUsIdIr2wimo-YOXG-': 1, '1H-aCHv_vvj9DgGKThlCR2NVVT7ayvj1w': 1 }, EVENT_ORDER = ['1EVucNcWRywuGpZFtaCeIWhuul92knxbc', '14iyQrVBchcDzs5wNLdFcPa88QG8H6xNh', '1uk1WKIiMu_2tk6CkGThLm68MHvR-mzMT', '13tyPvLl7GQ_Cmgw4EXgZHfyZIIz_a8O9'];
     var dlist = document.getElementById('doc-list'), dmsg = document.getElementById('doc-msg'), openDocs = {};   // spec §54: which document cards are open (kept across auto-refresh)
     var b64Blob = function (data, mime) { var bin = atob(data), bytes = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i); return new Blob([bytes], { type: mime }); };
     var docOpen = function (d, btn, download) {
@@ -1060,13 +1060,16 @@
     var rvOpenState = {};   // which groups / cards are open (kept across reloads); all closed by default (Alex, 2026-11-26)
     var rvDetails = function (key, cls) { var d = document.createElement('details'); d.className = cls; d.open = !!rvOpenState[key]; d.addEventListener('toggle', function () { rvOpenState[key] = d.open; }); return d; };
     // spec §113: Downloads in collapsible sections that mirror the officers-page tabs and sub-tabs
-    var RV_SECTIONS = [['Membership', ['Registrations', 'Print name tags']], ['Events', ['Inaugural Night']], ['Help', ['']], ['Board of Trustees', ['Board documents', 'Tax and pricing model']], ['Letters', ['']], ['Other', ['']]];
+    var RV_SECTIONS = [['Membership', ['Registrations', 'Print name tags']], ['Events', ['Inaugural Night', 'T-shirt contest']], ['Help', ['']], ['Board of Trustees', ['Board documents', 'Tax and pricing model']], ['Letters', ['']], ['Other', ['']]];
     var rvSection = function (d) {
-      var k = d.key || '';
+      var k = d.key || '', n = (String(d.docno || '').match(/^SJFACC-([A-Z]{3}(?:-[A-Z]{2,3})?)-\d+$/) || [])[1];   // tab-based number (spec §115) decides first
+      var BY_NO = { 'MEM-REG': ['Membership', 'Registrations'], 'MEM-NT': ['Membership', 'Print name tags'], 'EVT-IN': ['Events', 'Inaugural Night'], 'EVT-TC': ['Events', 'T-shirt contest'],
+        'HLP': ['Help', ''], 'BOT-BD': ['Board of Trustees', 'Board documents'], 'BOT-TP': ['Board of Trustees', 'Tax and pricing model'], 'LTR': ['Letters', ''] };
+      if (n && BY_NO[n]) return BY_NO[n];
       if (d.kind === 'letter' || /^LTR-/.test(k)) return ['Letters', ''];
       if (k === 'NAME-TAGS') return ['Membership', 'Print name tags'];
       if (/^(FORM-|PASS-|LANYARD|GUEST-)/.test(k)) return ['Membership', 'Registrations'];
-      if (k === 'P-2.2') return ['Help', ''];
+      if (k === 'P-2.1' || k === 'P-2.2') return ['Help', ''];
       if (/^(OD-|P-2\.|COIN-|CERT-|FLYER-)/.test(k)) return ['Events', 'Inaugural Night'];
       if (/^BD-00[4-7]$/.test(k)) return ['Board of Trustees', 'Tax and pricing model'];
       if (/^(TD-|MIN-|BD-)/.test(k) || d.target === 'board') return ['Board of Trustees', 'Board documents'];
@@ -1148,7 +1151,7 @@
     var reviewCard = function (d, box, em) {
       var letter = d.kind === 'letter';
       var card = rvDetails('d:' + (d.key || d.id), 'doc-card-o doc-body review-card'), sm = document.createElement('summary'); sm.className = 'review-sum';
-      var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = letter ? (d.subject || d.title) : (d.docno ? d.docno + ' · ' : '') + d.title; sm.appendChild(h); card.appendChild(sm);
+      var h = document.createElement('b'); h.className = 'doc-title'; h.textContent = (d.docno ? d.docno + ' · ' : '') + (letter ? (d.subject || d.title) : d.title); sm.appendChild(h); card.appendChild(sm);
       var st = { Approve: [letter ? '✓ Approved to send' : '✓ Approved', 'ok'], Deny: ['Denied', 'no'], Revise: ['Revise', 'warn'] }[d.decision] || ['Waiting for review', 'wait'];
       var badge = document.createElement('span'); badge.className = 'review-badge review-' + st[1]; badge.textContent = st[0]; sm.appendChild(badge);
       var mt = document.createElement('p'); mt.className = 'trustee-meta';
@@ -1189,9 +1192,9 @@
         rvList.innerHTML = '';
         if (!res.ok) { say(rvMsg, res.error); return; }
         var used = {};
-        var emFor = function (d) { var m = ems.filter(function (e) { return e.docno && e.docno === d.docno; })[0]; if (m) used[m.id] = 1; return m; };
+        var emFor = function (d) { var m = ems.filter(function (e) { return e.id === REVIEW_KEY_ID[d.key] || (e.docno && e.docno === d.docno); })[0]; if (m) used[m.id] = 1; return m; };
         var docs = res.docs.map(function (d) { return { d: d, sec: rvSection(d) }; });
-        var orphan = ems.filter(function (e) { return !res.docs.some(function (d) { return d.docno && d.docno === e.docno; }); });
+        var orphan = ems.filter(function (e) { return !res.docs.some(function (d) { return e.id === REVIEW_KEY_ID[d.key] || (d.docno && d.docno === e.docno); }); });
         if (!docs.length && !orphan.length) { var n0 = document.createElement('p'); n0.className = 'note'; n0.textContent = 'Nothing pushed for review yet.'; rvList.appendChild(n0); return; }
         RV_SECTIONS.forEach(function (S) {
           var mine = docs.filter(function (x) { return x.sec[0] === S[0]; });
@@ -1294,10 +1297,28 @@
     // a person with access opens to their email, role and buttons; FASSJ-group officers not on the roster go under "Other".
     var fcomb = document.getElementById('fassj-combined');
     var normName = function (s) { return String(s || '').toLowerCase().replace(/,.*$/, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim(); };
+    // spec §115: Table of Organization: read-only name, position and status for every officer (changes only in Admin -> Management)
+    var renderOrg = function (roster, offs) {
+      var boxes = { Board: document.getElementById('org-trustees'), Officer: document.getElementById('org-officers') };
+      if (!boxes.Board || !boxes.Officer) return;
+      boxes.Board.innerHTML = ''; boxes.Officer.innerHTML = '';
+      roster.forEach(function (p) {
+        var box = p.group === 'Board' ? boxes.Board : boxes.Officer;
+        var acc = offs.filter(function (x) { return normName(x.o.name) === normName(p.name); })[0];
+        var stx = acc ? acc.o.status : (p.status || 'No sign-in yet');
+        var row = document.createElement('div'); row.className = 'doc-acc reg-acc off-none org-row';
+        var nm = document.createElement('span'); nm.className = 'doc-title reg-name'; nm.textContent = p.name;
+        var po = document.createElement('span'); po.className = 'doc-sum off-pos'; po.textContent = p.position;
+        var st = document.createElement('span'); st.className = 'vote-result ' + (stx === 'Active' ? 'r-approved' : 'r-open'); st.textContent = stx;
+        row.appendChild(nm); row.appendChild(po); row.appendChild(st); box.appendChild(row);
+      });
+      [boxes.Board, boxes.Officer].forEach(function (b) { if (!b.children.length) { var p0 = document.createElement('p'); p0.className = 'note'; p0.textContent = 'No one listed yet.'; b.appendChild(p0); } });
+    };
     var renderFassj = function (offs) {
       if (!fcomb) return;
       post({ form: 'officer_fassj_roster', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
+        if (res.ok) renderOrg(res.roster, offs);
         fcomb.innerHTML = '';
         if (!res.ok) { var e0 = document.createElement('p'); e0.className = 'note'; e0.textContent = res.error; fcomb.appendChild(e0); return; }
         var used = {}, g = '';
