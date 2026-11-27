@@ -1179,5 +1179,5 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
 /* Schedule programs table: phones show the Program column only (Alex, 2026-11-27) */
 @media (max-width: 700px) {
   table.programs { min-width: 0; }
-  .programs th:not(:first-child), .programs td:not(:first-child) { display: none; }
+  .programs th:not(:first-child):not(:nth-child(4)), .programs td:not(:first-child):not(:nth-child(4)) { display: none; }
 }
