@@ -1303,20 +1303,31 @@
     var fcomb = document.getElementById('fassj-combined');
     var normName = function (s) { return String(s || '').toLowerCase().replace(/,.*$/, '').replace(/[^a-z ]/g, '').replace(/\s+/g, ' ').trim(); };
     // spec §115: Table of Organization: read-only name, position and status for every officer (changes only in Admin -> Management)
+    // A trustee is anyone in roster group Board or whose position says "Trustee" (e.g. "President · Trustee"); officers list everyone else's officer title too (spec §117)
+    var orgSplit = function (roster) {
+      var out = { trustees: [], officers: [] };
+      roster.forEach(function (p) {
+        var parts = String(p.position || '').split(/\s*[·,;]\s*/).filter(Boolean), tr = p.group === 'Board' || parts.some(function (x) { return /^trustee$/i.test(x); });
+        var title = parts.filter(function (x) { return !/^trustee$/i.test(x); }).join(' · ');
+        if (tr) out.trustees.push({ name: p.name, status: p.status, shown: 'Trustee' + (title ? ' (' + title + ')' : '') });
+        if (p.group !== 'Board') out.officers.push({ name: p.name, status: p.status, shown: title || p.position });
+      });
+      return out;
+    };
     var renderOrg = function (roster, offs) {
       var boxes = { Board: document.getElementById('org-trustees'), Officer: document.getElementById('org-officers') };
       if (!boxes.Board || !boxes.Officer) return;
       boxes.Board.innerHTML = ''; boxes.Officer.innerHTML = '';
-      roster.forEach(function (p) {
-        var box = p.group === 'Board' ? boxes.Board : boxes.Officer;
+      var lists = orgSplit(roster);
+      [[lists.trustees, boxes.Board], [lists.officers, boxes.Officer]].forEach(function (L) { L[0].forEach(function (p) {
         var acc = offs.filter(function (x) { return normName(x.o.name) === normName(p.name); })[0];
         var stx = acc ? acc.o.status : (p.status || 'No sign-in yet');
         var row = document.createElement('div'); row.className = 'doc-acc reg-acc off-none org-row';
         var nm = document.createElement('span'); nm.className = 'doc-title reg-name'; nm.textContent = p.name;
-        var po = document.createElement('span'); po.className = 'doc-sum off-pos'; po.textContent = p.position;
+        var po = document.createElement('span'); po.className = 'doc-sum off-pos'; po.textContent = p.shown;
         var st = document.createElement('span'); st.className = 'vote-result ' + (stx === 'Active' ? 'r-approved' : 'r-open'); st.textContent = stx;
-        row.appendChild(nm); row.appendChild(po); row.appendChild(st); box.appendChild(row);
-      });
+        row.appendChild(nm); row.appendChild(po); row.appendChild(st); L[1].appendChild(row);
+      }); });
       [boxes.Board, boxes.Officer].forEach(function (b) { if (!b.children.length) { var p0 = document.createElement('p'); p0.className = 'note'; p0.textContent = 'No one listed yet.'; b.appendChild(p0); } });
     };
     var renderFassj = function (offs) {
