@@ -272,7 +272,7 @@
       }).catch(function () { say(msg, 'Couldn\u2019t load the invoices.'); });
     };
     // spec §93: Legal Requirements tab: the formation steps, start to finish, ticked when completed (who and when saved)
-    var LEGAL_DOCNO = { attachment: 'SJFACC-BOT-BD-02', meeting: 'SJFACC-BOT-BD-06' };   // the document each step comes from (tab-based numbers, spec §115); default the Formation Document
+    var LEGAL_DOCNO = { attachment: 'SJFACC-BOT-FD-02', meeting: 'SJFACC-BOT-BDD-03' };   // the document each step comes from (tab-based numbers, spec §115); default the Formation Document
     var loadLegal = function () {
       var lt = document.getElementById('tab-legal'), ll = document.getElementById('legal-list'), lm = document.getElementById('legal-msg'), lp = document.getElementById('legal-progress');
       if (!lt || !ll) return;
@@ -298,7 +298,7 @@
           var top = document.createElement('div'); top.className = 'lr-top';
           var b = document.createElement('span'); b.className = 'badge lr-badge' + (q.done ? ' lr-badge--done' : ''); b.textContent = q.done ? '✓ Completed' : 'Open'; top.appendChild(b);
           var t = document.createElement('b'); t.className = 'doc-title'; t.textContent = q.title; top.appendChild(t);
-          var dn = document.createElement('span'); dn.className = 'lr-docno'; dn.textContent = q.docno || LEGAL_DOCNO[q.id] || 'SJFACC-BOT-BD-01'; top.appendChild(dn); card.appendChild(top);   // document control number (spec §113)
+          var dn = document.createElement('span'); dn.className = 'lr-docno'; dn.textContent = q.docno || LEGAL_DOCNO[q.id] || 'SJFACC-BOT-FD-01'; top.appendChild(dn); card.appendChild(top);   // document control number (spec §113)
           var d = document.createElement('p'); d.className = 'trustee-meta'; d.textContent = q.detail + (q.due ? ' Due: ' + q.due + '.' : ''); card.appendChild(d);
           if (q.by || q.at) { var w = document.createElement('p'); w.className = 'by'; w.textContent = (q.done ? 'Completed' : 'Marked not completed') + ' by ' + (q.by || '—') + (q.at ? ' on ' + q.at : '') + (q.note ? ' · ' + q.note : ''); card.appendChild(w); }
           var save = function (done, ctl) {   // completed steps are locked; only owners can reopen (spec §93)
@@ -329,15 +329,19 @@
       var plist = document.getElementById('pricing-list'), ptab = document.getElementById('tab-pricing');   // spec §113: BD-004/005/006 (and BD-007 once published) -> Tax and pricing model
       var PRICING = { '1lFls0EBinWg1gJyHP8CMWoRfoUGz4a5u': 1, '1Oyp4abvcW2VgqHiveJ6T56WkdNEwVaL0': 1, '1__nkvrhpszLPqWAi6zK4plnwgkxOEO4U': 1 };
       var isPricing = function (d) { return PRICING[d.id] || /BOT-TP-|BD-007/.test(d.docno || ''); };
+      var blist = document.getElementById('bdd-list'), btab = document.getElementById('tab-bdd');   // FD vs BDD (Alex, 2026-11-27)
+      var DECISIONS = { '1RHfpnvcq-jk4dVwzC0y5XuaNyUxjspH5': 1, '1c59lmgQGKgAupcT2ECKx72TmenY_Y3dt': 1, '195rbDfGlz3AUyT57WmqFrvGdykm_zGxa': 1 };
+      var isDecision = function (d) { return !isPricing(d) && (DECISIONS[d.id] || /BOT-BDD-/.test(d.docno || '')); };
+      var listFor = function (d) { return isPricing(d) && plist ? plist : isDecision(d) && blist ? blist : tlist; };
       if (!tlist || !ttab) return;
       post({ form: 'officer_trustee_docs', token: tok() }).then(function (res) {
         if (res.signedOut) return signOut(res.error);
-        if (!res.ok) { ttab.hidden = true; if (ptab) ptab.hidden = true; return; }
-        var wasOpen = {}; Array.prototype.forEach.call(document.querySelectorAll('#trustee-list details.td-group, #pricing-list details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
-        ttab.hidden = false; tlist.innerHTML = ''; if (ptab) ptab.hidden = false; if (plist) plist.innerHTML = '';
+        if (!res.ok) { ttab.hidden = true; if (ptab) ptab.hidden = true; if (btab) btab.hidden = true; return; }
+        var wasOpen = {}; Array.prototype.forEach.call(document.querySelectorAll('#trustee-list details.td-group, #bdd-list details.td-group, #pricing-list details.td-group'), function (g) { wasOpen[g.dataset.id] = g.open; });   // keep open/closed (spec §98)
+        ttab.hidden = false; tlist.innerHTML = ''; if (ptab) ptab.hidden = false; if (plist) plist.innerHTML = ''; if (btab) btab.hidden = false; if (blist) blist.innerHTML = '';
         res.docs.forEach(function (d) { rvTrust[d.id] = d; });
-        [[tlist, false, 'No trustee documents yet.'], [plist, true, 'No tax and pricing documents yet.']].forEach(function (x) {
-          if (x[0] && !res.docs.some(function (d) { return !!isPricing(d) === x[1]; })) { var none = document.createElement('p'); none.className = 'note'; none.textContent = x[2]; x[0].appendChild(none); }
+        [[tlist, 'No founding documents yet.'], [blist, 'No board decision documents yet.'], [plist, 'No tax and pricing documents yet.']].forEach(function (x) {
+          if (x[0] && !res.docs.some(function (d) { return listFor(d) === x[0]; })) { var none = document.createElement('p'); none.className = 'note'; none.textContent = x[1]; x[0].appendChild(none); }
         });
         if (!res.docs.length) return;
         res.docs.forEach(function (d) {
@@ -449,7 +453,7 @@
             });
             card.appendChild(form);
           }
-          ((isPricing(d) && plist) ? plist : tlist).appendChild(tg);
+          listFor(d).appendChild(tg);
         });
       }).catch(function () { ttab.hidden = true; });
     };
@@ -1060,11 +1064,11 @@
     var rvOpenState = {};   // which groups / cards are open (kept across reloads); all closed by default (Alex, 2026-11-26)
     var rvDetails = function (key, cls) { var d = document.createElement('details'); d.className = cls; d.open = !!rvOpenState[key]; d.addEventListener('toggle', function () { rvOpenState[key] = d.open; }); return d; };
     // spec §113: Downloads in collapsible sections that mirror the officers-page tabs and sub-tabs
-    var RV_SECTIONS = [['Membership', ['Registrations', 'Print name tags']], ['Events', ['Inaugural Night', 'T-shirt contest']], ['Help', ['']], ['Board of Trustees', ['Board documents', 'Tax and pricing model']], ['Letters', ['']], ['Other', ['']]];
+    var RV_SECTIONS = [['Membership', ['Registrations', 'Print name tags']], ['Events', ['Inaugural Night', 'T-shirt contest']], ['Help', ['']], ['Board of Trustees', ['Founding Documents', 'Board Decision Documents', 'Tax and pricing model']], ['Letters', ['']], ['Other', ['']]];
     var rvSection = function (d) {
       var k = d.key || '', n = (String(d.docno || '').match(/^SJFACC-([A-Z]{3}(?:-[A-Z]{2,3})?)-\d+$/) || [])[1];   // tab-based number (spec §115) decides first
       var BY_NO = { 'MEM-REG': ['Membership', 'Registrations'], 'MEM-NT': ['Membership', 'Print name tags'], 'EVT-IN': ['Events', 'Inaugural Night'], 'EVT-TC': ['Events', 'T-shirt contest'],
-        'HLP': ['Help', ''], 'BOT-BD': ['Board of Trustees', 'Board documents'], 'BOT-TP': ['Board of Trustees', 'Tax and pricing model'], 'LTR': ['Letters', ''] };
+        'HLP': ['Help', ''], 'BOT-FD': ['Board of Trustees', 'Founding Documents'], 'BOT-BDD': ['Board of Trustees', 'Board Decision Documents'], 'BOT-TP': ['Board of Trustees', 'Tax and pricing model'], 'LTR': ['Letters', ''] };
       if (n && BY_NO[n]) return BY_NO[n];
       if (d.kind === 'letter' || /^LTR-/.test(k)) return ['Letters', ''];
       if (k === 'NAME-TAGS') return ['Membership', 'Print name tags'];
@@ -1072,7 +1076,8 @@
       if (k === 'P-2.1' || k === 'P-2.2') return ['Help', ''];
       if (/^(OD-|P-2\.|COIN-|CERT-|FLYER-)/.test(k)) return ['Events', 'Inaugural Night'];
       if (/^BD-00[4-7]$/.test(k)) return ['Board of Trustees', 'Tax and pricing model'];
-      if (/^(TD-|MIN-|BD-)/.test(k) || d.target === 'board') return ['Board of Trustees', 'Board documents'];
+      if (/^BD-00[1-3]$/.test(k)) return ['Board of Trustees', 'Board Decision Documents'];
+      if (/^(TD-|MIN-|BD-)/.test(k) || d.target === 'board') return ['Board of Trustees', 'Founding Documents'];
       if (d.target === 'approvals') return ['Events', 'Inaugural Night'];
       return ['Other', ''];
     };
@@ -1202,7 +1207,7 @@
           if (!mine.length && !extra.length) return;
           var gbox = rvDetails('g:' + S[0], 'review-groupbox'), gh = document.createElement('summary'); gh.className = 'review-group'; gh.textContent = S[0] + ' (' + (mine.length + extra.length) + ')'; gbox.appendChild(gh); rvList.appendChild(gbox);
           S[1].forEach(function (subName) {
-            var list = mine.filter(function (x) { return x.sec[1] === subName; }), more = subName === 'Board documents' ? extra : [];
+            var list = mine.filter(function (x) { return x.sec[1] === subName; }), more = subName === 'Founding Documents' ? extra : [];
             if (!list.length && !more.length) return;
             var box = gbox;
             if (subName) { box = rvDetails('s:' + S[0] + '/' + subName, 'review-groupbox review-subbox'); var sh = document.createElement('summary'); sh.className = 'review-group review-subgroup'; sh.textContent = subName + ' (' + (list.length + more.length) + ')'; box.appendChild(sh); gbox.appendChild(box); }
