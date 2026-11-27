@@ -1169,3 +1169,15 @@ details.review-card { margin: 8px 0; } details.review-card > summary.review-sum 
   .dep-row > summary { grid-template-columns: 64px minmax(0, 1fr) 18px; grid-template-areas: "logo name more"; }
   .flap i { font-size: .9rem; min-width: .82em; }
 }
+/* Partners board: Role column on wider screens only; phones show the partner name only (Alex, 2026-11-27) */
+.dep-cols, .dep-row > summary { grid-template-columns: 92px minmax(0, 1fr) calc(11 * (1.15em + 3px)) 28px; }
+.dep-cols { font-size: .7rem; } .dep-cols, .dep-row > summary { --t: 1.21rem; } .dep-cols, .dep-row > summary { grid-template-columns: 92px minmax(0, 1fr) calc(11 * (var(--t) * 1.15 + 3px)) 28px; }
+@media (max-width: 700px) {
+  .flap--role, .dep-col-role { display: none !important; }
+  .dep-row > summary { grid-template-columns: 64px minmax(0, 1fr) 18px; }
+}
+/* Schedule programs table: phones show the Program column only (Alex, 2026-11-27) */
+@media (max-width: 700px) {
+  table.programs { min-width: 0; }
+  .programs th:not(:first-child), .programs td:not(:first-child) { display: none; }
+}
